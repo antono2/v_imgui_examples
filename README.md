@@ -12,3 +12,5 @@ Please make sure to [build VIMGUI library](https://github.com/antono2/imgui#inst
 
 ## Run
 `v run .`
+
+![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)
