@@ -11,11 +11,6 @@ import vulkan as vk
 #flag windows -I$env('VULKAN_SDK')/Include/Volk
 #flag windows -L$env('VULKAN_SDK')/Lib
 
-//#include "vulkan.h"
-#define VOLK_IMPLEMENTATION
-#define VK_NO_PROTOTYPES
-#include "volk.h"
-
 fn C.volkInitialize() vk.Result
 fn C.volkLoadInstance(vk.Instance)
 fn C.volkLoadDevice(vk.Device)
