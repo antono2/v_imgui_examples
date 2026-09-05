@@ -96,9 +96,9 @@ pub fn main() {
   init_info.min_image_count = app.min_image_count
   init_info.image_count = wd.image_count
   init_info.allocator = app.allocator
-  init_info.render_pass = wd.render_pass
-  init_info.subpass = 0
-  init_info.msaa_samples = vk.SampleCountFlagBits._1
+  init_info.pipeline_info_main.render_pass = wd.render_pass
+  init_info.pipeline_info_main.subpass = 0
+  init_info.pipeline_info_main.msaa_samples = vk.SampleCountFlagBits._1
   init_info.check_vk_result_fn = check_vk_result
   impl_vulkan.vkinit(&init_info)
 
@@ -171,7 +171,8 @@ pub fn main() {
     _ := imgui.slider_float(c'float', &app.f, 0.0, 1.0, unsafe{nil}, imgui.SliderFlags(0))
     //pub fn color_edit3(const_label &char, col &f32, flags ColorEditFlags) bool
     // Edit 3 floats representing a color
-    _ := imgui.color_edit3(c'clear color', &f32(&app.clear_color), imgui.ColorEditFlags(0))
+    color_values := unsafe { &f32(&app.clear_color) }
+    _ := imgui.color_edit3(c'clear color', color_values, imgui.ColorEditFlags(0))
     // Buttons return true when clicked (most widgets return true when edited/activated)
     // pub fn button(const_label &char, const_size ImVec2) bool
     button_size := imgui.ImVec2{
@@ -208,10 +209,12 @@ pub fn main() {
     draw_data := imgui.get_draw_data()
     is_minimized := draw_data.DisplaySize.x <= 0.0 || draw_data.DisplaySize.y <= 0.0
     if !is_minimized {
-      wd.clear_value.color.float32[0] = app.clear_color.x * app.clear_color.w
-      wd.clear_value.color.float32[1] = app.clear_color.y * app.clear_color.w
-      wd.clear_value.color.float32[2] = app.clear_color.z * app.clear_color.w
-      wd.clear_value.color.float32[3] = app.clear_color.w
+      unsafe {
+        wd.clear_value.color.float32[0] = app.clear_color.x * app.clear_color.w
+        wd.clear_value.color.float32[1] = app.clear_color.y * app.clear_color.w
+        wd.clear_value.color.float32[2] = app.clear_color.z * app.clear_color.w
+        wd.clear_value.color.float32[3] = app.clear_color.w
+      }
       app.frame_render(mut wd, draw_data)
       app.frame_present(mut wd)
     }
