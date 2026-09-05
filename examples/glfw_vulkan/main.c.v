@@ -71,9 +71,6 @@ pub fn main() {
   ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.nav_enable_keyboard)
   // Enable Gamepad Controls
   ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.nav_enable_gamepad)
-  // Scale fonts by dpi
-  ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.dpi_enable_scale_fonts)
-
   // Setup Dear ImGui style
   imgui.style_colors_dark(unsafe{nil})
   // imgui.style_colors_light(unsafe{nil})
@@ -555,4 +552,3 @@ pub fn (mut app App) cleanup_vulkan() {
   vk.destroy_device(app.device, app.allocator)
   vk.destroy_instance(app.instance, app.allocator)
 }
-
