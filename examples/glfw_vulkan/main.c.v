@@ -25,6 +25,10 @@ import imgui.impl_glfw
 
 
 pub fn main() {
+  // Volk must be initialized before GLFW performs Vulkan discovery.
+  if C.volkInitialize() != vk.Result.success {
+    panic('Could not volkInitialize()')
+  }
   glfw.set_error_callback(glfw_error_callback)
   if !glfw.initialize() {
     panic('Could not initialize GLFW')
@@ -99,6 +103,11 @@ pub fn main() {
   init_info.pipeline_info_main.render_pass = wd.render_pass
   init_info.pipeline_info_main.subpass = 0
   init_info.pipeline_info_main.msaa_samples = vk.SampleCountFlagBits._1
+  // A zero sType asks ImGui to use its built-in shaders.
+  unsafe {
+    init_info.custom_shader_vert_create_info.sType = vk.StructureType(0)
+    init_info.custom_shader_frag_create_info.sType = vk.StructureType(0)
+  }
   init_info.check_vk_result_fn = check_vk_result
   impl_vulkan.vkinit(&init_info)
 
@@ -236,7 +245,6 @@ pub fn main() {
 
 pub struct App {
 pub mut:
-  debug_report vk.DebugReportCallbackEXT
   allocator &vk.AllocationCallbacks = unsafe{nil}
   instance vk.Instance
   physical_device vk.PhysicalDevice
@@ -274,12 +282,9 @@ pub fn check_vk_result(err vk.Result) {
   }
 }
 
-@[unsafe]
-// pub type PFN_vkDebugReportCallbackEXT = fn (   DebugReportFlagsEXT,   DebugReportObjectTypeEXT,   u64,   usize,   i32,   &char,   &char,   voidptr) 
-pub fn debug_report(flags vk.DebugReportFlagsEXT, object_type vk.DebugReportObjectTypeEXT, object u64, location usize, message_code i32, const_p_layer_prefix &char, const_p_message &char, p_user_data voidptr) vk.Bool32 {
-  eprintln('[vulkan] Debug report from ObjectType: ${object_type}')
-  eprintln('Message: ${cstring_to_vstring(const_p_message)}\n')
-  return vk._false
+fn imgui_vulkan_loader(function_name &char, user_data voidptr) voidptr {
+  instance := vk.Instance(user_data)
+  return voidptr(vk.get_instance_proc_addr(instance, function_name))
 }
 
 pub type String = string
@@ -311,17 +316,14 @@ pub fn is_extension_available(properties []vk.ExtensionProperties, extension &ch
 
 
 pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
-  mut res := C.volkInitialize()
-  if res != vk.Result.success {
-    panic('Could not volkInitialize()')
-  }
+  mut res := vk.Result.success
   // Create Vulkan Instance
   mut create_info := vk.InstanceCreateInfo{}
   // Enumerate available extensions
   mut ie_properties_count := u32(0)
   mut ie_properties := []vk.ExtensionProperties{}
   mut n := unsafe{nil}
-  vk.enumerate_instance_extension_properties(unsafe{nil}, &ie_properties_count, mut n)
+  res = vk.enumerate_instance_extension_properties(unsafe{nil}, &ie_properties_count, mut n)
   check_vk_result(res)
   ie_properties.ensure_cap(int(ie_properties_count))
   mut ie_properties_data := ie_properties.data
@@ -335,26 +337,17 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
     instance_extensions << vk.khr_portability_enumeration_extension_name
     create_info.flags |= vk.InstanceCreateFlags(vk.InstanceCreateFlagBits.enumerate_portability)
   }
-  // Enabling validation layers
-  mut layers := []&char{len: 1, init: c'VK_LAYER_KHRONOS_validation'}
-  create_info.enabledLayerCount = 1
-  create_info.ppEnabledLayerNames = layers.data
-  instance_extensions << c'VK_EXT_debug_report'
   // Create Vulkan Instance
   create_info.enabledExtensionCount = u32(instance_extensions.len)
   create_info.ppEnabledExtensionNames = instance_extensions.data
   res = vk.create_instance(&create_info, app.allocator, &app.instance)
   check_vk_result(res)
   C.volkLoadInstance(app.instance)
-
-  fn_create_debug_report_callback := vk.PFN_vkCreateDebugReportCallbackEXT(vk.get_instance_proc_addr(app.instance, c'vkCreateDebugReportCallbackEXT'))
-  assert !isnil(fn_create_debug_report_callback)
-  mut debug_report_ci := vk.DebugReportCallbackCreateInfoEXT{}
-  debug_report_ci.flags |= vk.DebugReportFlagsEXT(u32(vk.DebugReportFlagBitsEXT.error) | u32(vk.DebugReportFlagBitsEXT.warning) | u32(vk.DebugReportFlagBitsEXT.performance_warning))
-  debug_report_ci.pfnCallback = vk.PFN_vkDebugReportCallbackEXT(debug_report)
-  debug_report_ci.pUserData = unsafe{nil}
-  res = fn_create_debug_report_callback(app.instance, &debug_report_ci, app.allocator, &app.debug_report)
-  check_vk_result(res)
+  // ImGui uses its own no-prototypes dispatch table. Populate it before any
+  // impl_vulkan helper; otherwise its first Vulkan call can jump through null.
+  if !impl_vulkan.load_functions(vk.api_version_1_0, imgui_vulkan_loader, voidptr(app.instance)) {
+    panic('Could not load ImGui Vulkan functions')
+  }
 
   // Select Physical Device (GPU)
   app.physical_device = unsafe{nil}
@@ -546,12 +539,6 @@ pub fn (mut app App) cleanup_vulkan_window() {
 
 pub fn (mut app App) cleanup_vulkan() {
   vk.destroy_descriptor_pool(app.device, app.descriptor_pool, app.allocator)
-
-  // Remove debug report callbacl
-  f_destroy_debug_report_callback_ext := vk.PFN_vkDestroyDebugReportCallbackEXT(vk.get_instance_proc_addr(app.instance, c'vkDestroyDebugReportCallbackEXT'))
-  assert !isnil(f_destroy_debug_report_callback_ext)
-  f_destroy_debug_report_callback_ext(app.instance, app.debug_report, app.allocator)
-
   vk.destroy_device(app.device, app.allocator)
   vk.destroy_instance(app.instance, app.allocator)
 }
