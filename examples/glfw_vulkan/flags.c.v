@@ -1,6 +1,6 @@
 module glfw_vulkan
 
-import vulkan as vk
+import antono2.vulkan as vk
 
 #flag linux -I$env('VULKAN_SDK')/include
 #flag linux -I$env('VULKAN_SDK')/include/vulkan

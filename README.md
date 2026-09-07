@@ -27,10 +27,8 @@ Install the V modules, build the native ImGui library, and configure the
 Vulkan/GLFW locations before compiling this repository:
 
 ```bash
-v install https://github.com/antono2/vulkan
-v install https://github.com/antono2/glfw
-v install https://github.com/antono2/imgui
-cd ~/.vmodules/imgui
+v install antono2.imgui
+cd ~/.vmodules/antono2/imgui
 ./build_vimgui.sh --linkage shared --glfw system
 
 git clone https://github.com/antono2/v_imgui_examples
