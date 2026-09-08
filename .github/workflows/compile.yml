@@ -1,0 +1,48 @@
+name: Compile example
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu24:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      VMODULES: ${{ github.workspace }}/source/modules
+      VULKAN_SDK: /usr
+      GLFW_INCLUDE: /usr/include
+      GLFW_LIB: /usr/lib/x86_64-linux-gnu
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: source/demo
+      - uses: actions/checkout@v7
+        with:
+          repository: antono2/imgui
+          path: source/modules/antono2/imgui
+          submodules: recursive
+      - uses: actions/checkout@v7
+        with:
+          repository: antono2/vulkan
+          path: source/modules/antono2/vulkan
+      - uses: actions/checkout@v7
+        with:
+          repository: antono2/glfw
+          path: source/modules/antono2/glfw
+      - uses: prantlf/setup-v-action@v4
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config
+      - name: Build native ImGui library
+        working-directory: source/modules/antono2/imgui
+        run: v run build_vimgui.vsh --linkage shared --glfw system
+      - name: Compile GLFW/Vulkan example
+        run: v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/v_imgui_demo" source/demo
+      - name: Verify executable
+        run: test -x "$RUNNER_TEMP/v_imgui_demo"
