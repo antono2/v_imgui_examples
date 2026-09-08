@@ -18,7 +18,7 @@ module glfw_vulkan
 
 
 import antono2.vulkan as vk
-import antono2.glfw as glfw
+import antono2.glfw
 import antono2.imgui as imgui
 import antono2.imgui.impl_vulkan
 import antono2.imgui.impl_glfw
