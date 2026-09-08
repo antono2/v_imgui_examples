@@ -36,13 +36,16 @@ cd v_imgui_examples
 export VULKAN_SDK=/usr
 export GLFW_INCLUDE=/usr/include
 export GLFW_LIB=/usr/lib/x86_64-linux-gnu
-v -no-memory-limit run .
+export VMODULES="${VMODULES:-$HOME/.vmodules}"
+v -no-memory-limit -path "$VMODULES/antono2|@vlib|@vmodules" run .
 ```
 
 The generated ImGui and ImPlot bindings make this an unusually large V
 compilation and it may require about 11 GiB of memory. The
 `-no-memory-limit` option prevents V's default compiler memory guard from
-stopping a machine that has sufficient RAM or swap.
+stopping a machine that has sufficient RAM or swap. Until the compiler changes
+from `vlang/v#28368` reach a tagged release, build V from the official
+`vlang/v` master branch; a custom compiler fork is not required.
 
 The demo requires a graphical session and a Vulkan-capable GPU/driver. Building
 successfully does not guarantee that Vulkan presentation is available on the

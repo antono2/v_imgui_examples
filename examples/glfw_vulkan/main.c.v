@@ -17,11 +17,11 @@
 module glfw_vulkan
 
 
-import antono2.vulkan as vk
-import antono2.glfw
-import antono2.imgui
-import antono2.imgui.impl_vulkan
-import antono2.imgui.impl_glfw
+import vulkan as vk
+import glfw
+import imgui
+import imgui.impl_vulkan
+import imgui.impl_glfw
 
 
 pub fn main() {
