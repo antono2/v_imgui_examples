@@ -392,14 +392,17 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
   vk.get_device_queue(app.device, app.queue_family, 0, &app.queue)
 
   // Create Descriptor Pool
-  // If you wish to load e.g. additional textures you may need to alter pools sizes and maxSets
+  // Dear ImGui 1.92.9+ keeps image views and samplers in separate descriptors.
+  // These are the backend's documented minimums for the font atlas; add more
+  // sampled-image descriptors for each texture registered by the application.
   mut pool_sizes := []vk.DescriptorPoolSize{}
   pool_sizes << vk.DescriptorPoolSize{
-    type: vk.DescriptorType.combined_image_sampler
-    // Current version of the backend use 1 descriptor for the font atlas + as many as additional calls done to ImGui_ImplVulkan_AddTexture().
-    // It is expected that as early as Q1 2025 the backend will use a few more descriptors. Use this value + number of desired calls to ImGui_ImplVulkan_AddTexture().
-    // #define IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE   (1)     // Minimum per atlas
-    descriptorCount: u32(1)
+    type: vk.DescriptorType.sampled_image
+    descriptorCount: u32(8)
+  }
+  pool_sizes << vk.DescriptorPoolSize{
+    type: vk.DescriptorType.sampler
+    descriptorCount: u32(2)
   }
   mut pool_info := vk.DescriptorPoolCreateInfo{}
   pool_info.flags = vk.DescriptorPoolCreateFlags(vk.DescriptorPoolCreateFlagBits.free_descriptor_set)
