@@ -53,6 +53,12 @@ selected machine. Windows native compilation is exercised by the related
 projects, but this standalone demo has not received a complete Windows runtime
 validation pass.
 
+The window displays the selected ImGui upstream variant. With the default
+`imgui` docking branch it creates a main-viewport dockspace and offers an
+optional platform-viewports checkbox for moving ImGui windows outside the GLFW
+window. With the `imgui` standard branch, the same source keeps independent
+floating windows and reports that docking is unavailable.
+
 ## Layout
 
 `main.v` selects the example. The GLFW/Vulkan implementation and its native

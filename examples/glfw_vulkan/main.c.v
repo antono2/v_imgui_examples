@@ -75,6 +75,7 @@ pub fn main() {
   ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.nav_enable_keyboard)
   // Enable Gamepad Controls
   ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.nav_enable_gamepad)
+  docking_enabled := imgui.configure_docking(true)
   // Setup Dear ImGui style
   imgui.style_colors_dark(unsafe{nil})
   // imgui.style_colors_light(unsafe{nil})
@@ -130,6 +131,7 @@ pub fn main() {
   // Our state
   show_demo_window := true
   mut show_another_window := false
+  mut platform_viewports_enabled := false
 
   // Main loop
   for !glfw.window_should_close(window) {
@@ -161,6 +163,12 @@ pub fn main() {
     impl_glfw.new_frame()
     imgui.new_frame()
 
+    // The docking variant creates a full-window dockspace. On standard builds
+    // this helper is a no-op, so the same demo source remains portable.
+    if docking_enabled {
+      imgui.create_main_dockspace()
+    }
+
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
     open := true
     if show_demo_window {
@@ -171,6 +179,16 @@ pub fn main() {
     _ := imgui.begin(c'Hello, world!', &open, imgui.WindowFlags(0))
     // Display some text (you can use a format strings too)
     imgui.text(c'This is some useful text.')
+    variant_txt := 'Variant: ${imgui.upstream_variant}'
+    imgui.text(variant_txt.str)
+    if docking_enabled {
+      imgui.text(c'Drag windows onto the main viewport to dock them.')
+      if imgui.checkbox(c'Platform viewports', &platform_viewports_enabled) {
+        imgui.configure_platform_viewports(platform_viewports_enabled)
+      }
+    } else {
+      imgui.text(c'Floating windows only; docking is unavailable.')
+    }
     // Edit bools storing our window open/close state
     _ := imgui.checkbox(c'Demo Window', &show_demo_window)
     _ := imgui.checkbox(c'Another Window', &show_another_window)
@@ -225,6 +243,9 @@ pub fn main() {
         wd.clear_value.color.float32[3] = app.clear_color.w
       }
       app.frame_render(mut wd, draw_data)
+    }
+    imgui.render_platform_viewports()
+    if !is_minimized {
       app.frame_present(mut wd)
     }
   } // for window_should_close
