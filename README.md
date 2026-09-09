@@ -1,6 +1,8 @@
 
 # Shows how to use V Dear ImGui
 
+[Project portfolio](https://oreskin.de/projects_en.php) · [Support independent development](https://oreskin.de/dono_en.php)
+
 This repository contains the GLFW/Vulkan example used to validate the
 [`antono2/imgui`](https://github.com/antono2/imgui) V bindings.
 
