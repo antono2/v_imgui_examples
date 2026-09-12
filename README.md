@@ -8,6 +8,15 @@ This repository contains the GLFW/Vulkan example used to validate the
 
 ## Recommended quick start
 
+From this checkout, the cross-platform setup installs/builds ImGui and compiles
+the example without opening a window:
+
+```sh
+v run setup.vsh
+```
+
+Use `v run setup.vsh --check` for read-only prerequisite diagnostics.
+
 The ImGui repository owns native-library setup and pins a tested revision of
 this example. On Ubuntu or Debian, the shortest supported path is:
 

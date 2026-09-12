@@ -52,6 +52,8 @@ jobs:
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
       - name: Compile GLFW/Vulkan example
-        run: v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/v_imgui_demo" source/demo
+        run: |
+          v -check-syntax source/demo/setup.vsh
+          v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/v_imgui_demo" source/demo
       - name: Verify executable
         run: test -x "$RUNNER_TEMP/v_imgui_demo"
