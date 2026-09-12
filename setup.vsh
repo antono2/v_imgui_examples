@@ -42,7 +42,9 @@ fn main() {
 	}
 	project_dir := os.dir(os.real_path(@FILE))
 	$if windows {
-		vulkan_sdk := os.execute('powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'VULKAN_SDK\', \'Machine\')"')
+		vulkan_sdk := os.execute(
+			'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'VULKAN_SDK\', \'Machine\')"',
+		)
 		if vulkan_sdk.exit_code == 0 && vulkan_sdk.output.trim_space() != '' {
 			os.setenv('VULKAN_SDK', vulkan_sdk.output.trim_space(), true)
 		}
