@@ -2,7 +2,6 @@
 
 // Installs/builds antono2.imgui and compiles this graphical example. It does
 // not launch a window; run the example normally after setup to see it.
-
 import os
 
 fn run(command string) ! {
@@ -17,7 +16,8 @@ fn run(command string) ! {
 }
 
 fn main() {
-	if os.args.len > 2 || (os.args.len == 2 && os.args[1] !in ['--install', '--check', '-h', '--help']) {
+	if os.args.len > 2
+		|| (os.args.len == 2 && os.args[1] !in ['--install', '--check', '-h', '--help']) {
 		eprintln('Usage: v run setup.vsh [--install|--check]')
 		exit(2)
 	}
@@ -42,9 +42,8 @@ fn main() {
 	}
 	project_dir := os.dir(os.real_path(@FILE))
 	$if windows {
-		vulkan_sdk := os.execute(
-			'powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'VULKAN_SDK\', \'Machine\')"',
-		)
+		vulkan_sdk :=
+			os.execute('powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'VULKAN_SDK\', \'Machine\')"')
 		if vulkan_sdk.exit_code == 0 && vulkan_sdk.output.trim_space() != '' {
 			os.setenv('VULKAN_SDK', vulkan_sdk.output.trim_space(), true)
 		}
