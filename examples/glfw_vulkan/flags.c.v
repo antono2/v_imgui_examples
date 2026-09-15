@@ -36,4 +36,6 @@ fn C.volkLoadDevice(vk.Device)
 #flag -D GLFW_INCLUDE_NONE
 //#flag -D GLFW_INCLUDE_VULKAN
 
+#flag -I @VMODROOT/examples/glfw_vulkan
 #include "GLFW/glfw3.h"
+#include "imgui_bridge.h"
