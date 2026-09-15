@@ -23,6 +23,10 @@ import imgui
 import imgui.impl_vulkan
 import imgui.impl_glfw
 
+fn C.v_imgui_example_enable_default_navigation()
+fn C.v_imgui_example_framerate() f32
+fn C.v_imgui_example_draw_data_is_minimized(draw_data &imgui.ImDrawData) bool
+
 
 pub fn main() {
   // Volk must be initialized before GLFW performs Vulkan discovery.
@@ -70,11 +74,9 @@ pub fn main() {
   // Setup Dear ImGui context
   // IMGUI_CHECKVERSION();
   mut ig_ctx := imgui.create_context(unsafe{nil})
-  mut ig_io := imgui.get_io_context_ptr(ig_ctx)
-  // Enable Keyboard Controls
-  ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.nav_enable_keyboard)
-  // Enable Gamepad Controls
-  ig_io.ConfigFlags |= u32(imgui.ConfigFlags_.nav_enable_gamepad)
+  imgui.get_io_context_ptr(ig_ctx)
+  // Enable keyboard and gamepad controls.
+  C.v_imgui_example_enable_default_navigation()
   docking_enabled := imgui.configure_docking(true)
   // Setup Dear ImGui style
   imgui.style_colors_dark(unsafe{nil})
@@ -216,7 +218,8 @@ pub fn main() {
     // :6  right-align with six spaces on the left
     // :.1 round to one decimal place
     // :f  do show the 0s at the end, even though they do not change the number
-    fps_txt := 'Application average ${(1000 / ig_io.Framerate):.3f} ms/frame (${ig_io.Framerate:6.1} FPS)'
+    framerate := C.v_imgui_example_framerate()
+    fps_txt := 'Application average ${(1000 / framerate):.3f} ms/frame (${framerate:6.1} FPS)'
     imgui.text(fps_txt.str)
     imgui.end()
 
@@ -234,7 +237,7 @@ pub fn main() {
     // Rendering
     imgui.render()
     draw_data := imgui.get_draw_data()
-    is_minimized := draw_data.DisplaySize.x <= 0.0 || draw_data.DisplaySize.y <= 0.0
+    is_minimized := C.v_imgui_example_draw_data_is_minimized(draw_data)
     if !is_minimized {
       unsafe {
         wd.clear_value.color.float32[0] = app.clear_color.x * app.clear_color.w
