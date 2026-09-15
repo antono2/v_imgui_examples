@@ -58,9 +58,9 @@ stopping a machine that has sufficient RAM or swap.
 
 The demo requires a graphical session and a Vulkan-capable GPU/driver. Building
 successfully does not guarantee that Vulkan presentation is available on the
-selected machine. Windows native compilation is exercised by the related
-projects, but this standalone demo has not received a complete Windows runtime
-validation pass.
+selected machine. CI compiles this standalone demo with MSVC and verifies its
+native Windows DLL artifacts; graphical presentation still requires a real GPU
+session.
 
 The window displays the selected ImGui upstream variant. With the default
 `imgui` docking branch it creates a main-viewport dockspace and offers an
