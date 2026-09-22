@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 2f0cab347957cc77d016fbc4442be4848e475aeb
+          ref: 6171c5eb98c363724b9aad297a7549909d182231
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 2f0cab347957cc77d016fbc4442be4848e475aeb
+          ref: 6171c5eb98c363724b9aad297a7549909d182231
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -164,6 +164,57 @@ jobs:
           foreach ($Artifact in @($Executable, $GlfwDll.FullName, $VimguiDll.FullName)) {
             if (-not (Test-Path $Artifact)) { throw "Missing Windows artifact: $Artifact" }
           }
+
+  strict-v3-frontend:
+    name: Required pinned V3 frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      VMODULES: ${{ github.workspace }}/source/modules
+      VULKAN_SDK: /usr
+      GLFW_INCLUDE: /usr/include
+      GLFW_LIB: /usr/lib/x86_64-linux-gnu
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: source/demo
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: antono2/imgui
+          ref: 6171c5eb98c363724b9aad297a7549909d182231
+          path: source/modules/antono2/imgui
+          submodules: recursive
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: antono2/vulkan
+          ref: 57cb3b5495c9441ce180f28e48ae34df6332da52
+          path: source/modules/antono2/vulkan
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: antono2/glfw
+          ref: e9a367938577919b4a5140a477c1250112978d8e
+          path: source/modules/antono2/glfw
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: vlang/v
+          ref: f59b886d2564e37d8626d715236fdfa928e13dda
+          path: toolchain/v
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: vlang/vc
+          ref: 4598bc7e4894c154b27391e4442005fff2fbbd68
+          path: toolchain/v/vc
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: vlang/tccbin
+          ref: d6e7ac1b1bcc98aed734a6ecbfa8509f24606c74
+          path: toolchain/v/thirdparty/tcc
+      - name: Build pinned V3 compiler
+        run: |
+          make -C toolchain/v local=1
+          echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
+      - name: Check demo with V3
+        run: v -new-compiler -check -path "$VMODULES/antono2|@vlib|@vmodules" source/demo
 
   linux-v-master:
     name: Advisory current V master and dependency masters
