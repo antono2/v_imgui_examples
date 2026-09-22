@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 2f0cab3
+          ref: 2f0cab347957cc77d016fbc4442be4848e475aeb
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 2f0cab3
+          ref: 2f0cab347957cc77d016fbc4442be4848e475aeb
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
