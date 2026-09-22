@@ -5,6 +5,8 @@
 
 This repository contains the GLFW/Vulkan example used to validate the
 [`antono2/imgui`](https://github.com/antono2/imgui) V bindings.
+The required CI builds use `antono2.vulkan@v2.0.0` and fixed ImGui, GLFW,
+and V compiler revisions. An advisory job checks their moving master branches.
 
 ## Recommended quick start
 
