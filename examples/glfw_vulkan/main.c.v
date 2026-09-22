@@ -151,7 +151,7 @@ pub fn main() {
     if fb_width > 0 && fb_height > 0
      && (app.swapchain_rebuild || app.main_window_data.width != fb_width || app.main_window_data.height != fb_height) {
       impl_vulkan.set_min_image_count(app.min_image_count)
-      impl_vulkan.create_or_resize_window(app.instance, app.physical_device, app.device, wd, app.queue_family, app.allocator, fb_width, fb_height, app.min_image_count)
+      impl_vulkan.create_or_resize_window(app.instance, app.physical_device, app.device, mut wd, app.queue_family, app.allocator, fb_width, fb_height, app.min_image_count)
       app.main_window_data.frame_index = 0
       app.swapchain_rebuild = false
     }
@@ -468,7 +468,7 @@ pub fn (mut app App) setup_vulkan_window(mut wd &impl_vulkan.Window, surface vk.
 
   // Create SwapChain, RenderPass, Framebuffer, etc.
   assert app.min_image_count >= 2
-  impl_vulkan.create_or_resize_window(app.instance, app.physical_device, app.device, wd, app.queue_family, app.allocator, width, height, app.min_image_count)
+  impl_vulkan.create_or_resize_window(app.instance, app.physical_device, app.device, mut wd, app.queue_family, app.allocator, width, height, app.min_image_count)
 }
 
 pub fn (mut app App) frame_render(mut wd impl_vulkan.Window, draw_data &imgui.ImDrawData) {
