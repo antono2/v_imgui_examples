@@ -42,7 +42,9 @@ pub fn main() {
   glfw.window_hint(glfw.client_api, glfw.no_api)
 
   main_scale := f32(1.0)
-  window := glfw.create_window(i32(1200 * main_scale), i32(800 * main_scale), 'Dear ImGui V+GLFW+Vulkan example', unsafe{nil}, unsafe{nil})
+  window := glfw.create_windowed(i32(1200 * main_scale), i32(800 * main_scale), 'Dear ImGui V+GLFW+Vulkan example') or {
+    panic(err)
+  }
 
   if !glfw.vulkan_supported() {
     panic('GLFW: Vulkan Not Supported')
@@ -65,11 +67,9 @@ pub fn main() {
   assert res == vk.Result.success
 
   // Create Framebuffers
-  mut w := i32(0)
-  mut h := i32(0)
-  glfw.get_framebuffer_size(window, &w, &h)
+  initial_size := glfw.framebuffer_size(window)
   mut wd := &app.main_window_data
-  app.setup_vulkan_window(mut wd, surface, w, h)
+  app.setup_vulkan_window(mut wd, surface, initial_size.width, initial_size.height)
 
   // Setup Dear ImGui context
   // IMGUI_CHECKVERSION();
@@ -145,9 +145,9 @@ pub fn main() {
     glfw.poll_events()
 
     // Resize swap chain?
-    mut fb_width := i32(0)
-    mut fb_height := i32(0)
-    glfw.get_framebuffer_size(window, &fb_width, &fb_height)
+    framebuffer := glfw.framebuffer_size(window)
+    fb_width := framebuffer.width
+    fb_height := framebuffer.height
     if fb_width > 0 && fb_height > 0
      && (app.swapchain_rebuild || app.main_window_data.width != fb_width || app.main_window_data.height != fb_height) {
       impl_vulkan.set_min_image_count(app.min_image_count)
