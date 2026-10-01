@@ -1,7 +1,5 @@
 module glfw_vulkan
 
-import vulkan as vk
-
 #flag linux -I$env('VULKAN_SDK')/include
 #flag linux -I$env('VULKAN_SDK')/include/vulkan
 #flag linux -I$env('VULKAN_SDK')/include/volk
@@ -11,9 +9,6 @@ import vulkan as vk
 #flag windows -I$env('VULKAN_SDK')/Include/Volk
 #flag windows -L$env('VULKAN_SDK')/Lib
 
-fn C.volkInitialize() vk.Result
-fn C.volkLoadInstance(vk.Instance)
-fn C.volkLoadDevice(vk.Device)
 
 
 // GLFW

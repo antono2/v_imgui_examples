@@ -1,7 +1,16 @@
 #ifndef V_IMGUI_EXAMPLE_BRIDGE_H
 #define V_IMGUI_EXAMPLE_BRIDGE_H
 
+#ifndef CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#endif
 #include "cimgui.h"
+#include <stdlib.h>
+
+static inline int v_imgui_example_smoke_frame_limit(void) {
+    const char *value = getenv("VIMGUI_SMOKE_FRAMES");
+    return value ? atoi(value) : 0;
+}
 
 static inline void v_imgui_example_enable_default_navigation(void) {
     ImGuiIO *io = igGetIO_Nil();
