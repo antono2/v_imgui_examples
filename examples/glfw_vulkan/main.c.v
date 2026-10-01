@@ -73,7 +73,6 @@ pub fn main() {
   app.setup_vulkan_window(mut wd, surface, initial_size.width, initial_size.height)
 
   // Setup Dear ImGui context
-  // IMGUI_CHECKVERSION();
   mut ig_ctx := imgui.create_context(unsafe{nil})
   imgui.get_io_context_ptr(ig_ctx)
   // Enable keyboard and gamepad controls.
@@ -81,8 +80,6 @@ pub fn main() {
   docking_enabled := imgui.configure_docking(true)
   // Setup Dear ImGui style
   imgui.style_colors_dark(unsafe{nil})
-  // imgui.style_colors_light(unsafe{nil})
-  // imgui.style_colors_classic(unsafe{nil})
 
   // Setup scaling
   mut style := imgui.get_style()
@@ -92,8 +89,7 @@ pub fn main() {
   // Setup Platform/Renderer backends
   impl_glfw.init_for_vulkan(window, true)
   mut init_info := impl_vulkan.InitInfo{}
-  // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
-  // init_info.ApiVersion = vk.api_version_1_4
+  // A zero api_version uses the Vulkan backend's header version.
   init_info.instance = app.instance
   init_info.physical_device = app.physical_device
   init_info.device = app.device
@@ -115,21 +111,7 @@ pub fn main() {
   init_info.check_vk_result_fn = check_vk_result
   impl_vulkan.vkinit(&init_info)
 
-  // Load Fonts
-  // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-  // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-  // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-  // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-  // - Read 'docs/FONTS.md' for more instructions and details. If you like the default font but want it to scale better, consider using the 'ProggyVector' from the same author!
-  // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-  //style.FontSizeBase = 20.0f;
-  //io.Fonts->AddFontDefault();
-  //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
-  //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
-  //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
-  //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
-  //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
-  //IM_ASSERT(font != nullptr);
+  // No custom fonts are loaded, so Dear ImGui uses its default font.
 
   // Our state
   show_demo_window := true
