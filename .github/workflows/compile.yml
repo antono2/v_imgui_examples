@@ -256,7 +256,7 @@ jobs:
           make -C toolchain/v
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
       - name: Install native dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb
       - name: Install headers matching Vulkan master
         run: |
           set -euo pipefail
@@ -280,6 +280,15 @@ jobs:
           v run build_vimgui.vsh --linkage shared --glfw system
           cd "$GITHUB_WORKSPACE"
           v -new-compiler -no-memory-limit -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc -o "$RUNNER_TEMP/v_imgui_demo" source/demo
+          lavapipe_manifests=(/usr/share/vulkan/icd.d/lvp_icd*.json)
+          test -f "${lavapipe_manifests[0]}"
+          export VK_DRIVER_FILES="${lavapipe_manifests[0]}"
+          export VK_ICD_FILENAMES="$VK_DRIVER_FILES"
+          smoke_status=0
+          VIMGUI_SMOKE_FRAMES=60 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout 30s xvfb-run -a "$RUNNER_TEMP/v_imgui_demo" > "$RUNNER_TEMP/v3-demo.log" 2>&1 || smoke_status=$?
+          cat "$RUNNER_TEMP/v3-demo.log"
+          test "$smoke_status" -eq 0
+          if grep -Eiq 'VUID-|validation error|segmentation|assert|fatal' "$RUNNER_TEMP/v3-demo.log"; then exit 1; fi
 
   required-checks:
     if: always()

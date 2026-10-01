@@ -26,12 +26,13 @@ import imgui.impl_glfw
 fn C.v_imgui_example_enable_default_navigation()
 fn C.v_imgui_example_framerate() f32
 fn C.v_imgui_example_draw_data_is_minimized(draw_data &imgui.ImDrawData) bool
+fn C.v_imgui_example_smoke_frame_limit() int
 
 
 pub fn main() {
-  // Volk must be initialized before GLFW performs Vulkan discovery.
-  if C.volkInitialize() != vk.Result.success {
-    panic('Could not volkInitialize()')
+  // The binding owns Volk initialization and TinyCC's Linux loader isolation.
+  if vk.initialize_loader() != vk.Result.success {
+    panic('Could not initialize Vulkan loader')
   }
   glfw.set_error_callback(glfw_error_callback)
   if !glfw.initialize() {
@@ -134,6 +135,9 @@ pub fn main() {
   show_demo_window := true
   mut show_another_window := false
   mut platform_viewports_enabled := false
+  // Let CI exercise rendering and orderly cleanup without closing the window manually.
+  smoke_frame_limit := C.v_imgui_example_smoke_frame_limit()
+  mut rendered_frames := 0
 
   // Main loop
   for !glfw.window_should_close(window) {
@@ -251,6 +255,10 @@ pub fn main() {
     if !is_minimized {
       app.frame_present(mut wd)
     }
+    rendered_frames++
+    if smoke_frame_limit > 0 && rendered_frames >= smoke_frame_limit {
+      break
+    }
   } // for window_should_close
 
   // Cleanup
@@ -366,7 +374,7 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
   create_info.ppEnabledExtensionNames = instance_extensions.data
   res = vk.create_instance(&create_info, app.allocator, &app.instance)
   check_vk_result(res)
-  C.volkLoadInstance(app.instance)
+  vk.load_instance_commands(app.instance)
   // ImGui uses its own no-prototypes dispatch table. Populate it before any
   // impl_vulkan helper; otherwise its first Vulkan call can jump through null.
   if !impl_vulkan.load_functions(vk.api_version_1_0, imgui_vulkan_loader, voidptr(app.instance)) {
