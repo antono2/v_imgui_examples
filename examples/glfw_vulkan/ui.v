@@ -1,6 +1,7 @@
 module glfw_vulkan
 
 import antono2.imgui
+import antono2.vulkan as vk
 
 struct DemoState {
 mut:
@@ -22,6 +23,11 @@ fn draw_demo(mut app App, userdata voidptr) {
 		if app.docking_available {
 			imgui.checkbox(c'Main dockspace', &app.dockspace_enabled)
 			if imgui.checkbox(c'Platform viewports', &state.platform_viewports) {
+				// Disabling viewports destroys their renderer buffers on the next frame.
+				// Secondary windows may still have submissions in flight.
+				if !state.platform_viewports {
+					assert vk.device_wait_idle(app.device) == vk.Result.success
+				}
 				imgui.configure_platform_viewports(state.platform_viewports)
 			}
 		} else {

@@ -1,7 +1,8 @@
 # Example validation before release
 
-Build and rendering results are recorded in the PR checks. Interactive checks
-below are intentionally pending until a tester runs the examples.
+Build and rendering results are recorded in the PR checks. See
+[the 2026-10-03 interaction report](validation-2026-10-03.md) for completed checks,
+the viewport fix, and the remaining device checks.
 
 ## Automated checks
 
@@ -21,21 +22,21 @@ scripts/smoke_desktop.sh "$PWD/build"
 
 ## Desktop interaction
 
-- [ ] Type a name; verify it appears in Details.
-- [ ] Change the gallery checkbox, slider, and combo; reopen the popup and secondary windows.
-- [ ] Resize table columns and the main window; collapse/reopen windows.
-- [ ] Close and reopen the upstream demo.
+- [x] Type a name; verify it appears in Details.
+- [x] Change the gallery checkbox, slider, and combo; reopen the popup and secondary windows.
+- [x] Resize table columns and the main window; collapse/reopen windows.
+- [x] Close and reopen the upstream demo.
 - [ ] Try standard and docking variants; toggle dockspace and platform viewports where supported.
-- [ ] Change plot amplitude/frequency and series visibility, including legend clicks.
-- [ ] Pan/zoom waveforms; pause/resume/reset history and observe a full wrap.
-- [ ] Close each application normally.
+- [x] Change plot amplitude/frequency and series visibility, including legend clicks.
+- [x] Pan/zoom waveforms; pause/resume/reset history and observe a full wrap.
+- [x] Close each application normally.
 
 ## Android interaction
 
 Record the APK revision, ABI, device/Android version, keyboard app, and languages.
 Install the matching debug APK; its launcher label is **V ImGui Touch Examples**.
 
-- [ ] Tap the counter repeatedly and check the progress indicator.
+- [x] Tap the counter repeatedly and check the progress indicator.
 - [ ] Enter ASCII and non-ASCII text; select and replace part of it with the native keyboard.
 - [ ] Move the cursor with touch and hardware keys, where available.
 - [ ] Hide the keyboard with Back, then tap the active field to reopen it.
