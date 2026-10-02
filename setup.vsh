@@ -52,7 +52,10 @@ fn main() {
 	}
 	os.setenv('VMODULES', module_dir, true)
 	imgui_root := os.join_path(module_dir, 'antono2', 'imgui')
-	revision := os.read_file(os.join_path(project_dir, 'IMGUI_REVISION')) or { panic(err) }
+	revision := (os.read_file(os.join_path(project_dir, 'IMGUI_REVISION')) or { panic(err) }).trim_space()
+	if revision.len != 40 || !revision.bytes().all((it >= `0` && it <= `9`) || (it >= `a` && it <= `f`)) {
+		panic('IMGUI_REVISION must contain a full lowercase Git commit SHA')
+	}
 	if mode == '--install' {
 		os.mkdir_all(os.dir(imgui_root)) or { panic(err) }
 		if !os.is_file(os.join_path(imgui_root, 'v.mod')) {
@@ -80,6 +83,7 @@ fn main() {
 	if mode == '--check' {
 		return
 	}
+	os.mkdir_all(os.join_path(project_dir, 'build')) or { panic(err) }
 	$if windows {
 		vulkan_sdk :=
 			os.execute('powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'VULKAN_SDK\', \'Machine\')"')
