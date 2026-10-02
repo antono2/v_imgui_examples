@@ -31,19 +31,19 @@ fn main() {
 	mut state := Dashboard{}
 	glfw_vulkan.run(glfw_vulkan.Options{
 		title: 'V ImGui: ImPlot dashboard'
-		initialize: initialize
-		shutdown: shutdown
+		initialize: initialize_dashboard
+		shutdown: shutdown_dashboard
 	}, draw, &state)
 }
 
-fn initialize(userdata voidptr) {
+fn initialize_dashboard(userdata voidptr) {
 	mut state := unsafe { &Dashboard(userdata) }
 	state.context = implot.create_context()
 	// The native constructor supplies auto colors, marker defaults, and stride.
 	state.spec = implot.spec_spec()
 }
 
-fn shutdown(userdata voidptr) {
+fn shutdown_dashboard(userdata voidptr) {
 	state := unsafe { &Dashboard(userdata) }
 	implot.spec_destroy(state.spec)
 	implot.destroy_context(state.context)
