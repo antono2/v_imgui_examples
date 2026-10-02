@@ -26,7 +26,7 @@ scripts/smoke_desktop.sh "$PWD/build"
 - [x] Change the gallery checkbox, slider, and combo; reopen the popup and secondary windows.
 - [x] Resize table columns and the main window; collapse/reopen windows.
 - [x] Close and reopen the upstream demo.
-- [ ] Try standard and docking variants; toggle dockspace and platform viewports where supported.
+- [x] Try standard and docking variants; toggle dockspace and platform viewports where supported.
 - [x] Change plot amplitude/frequency and series visibility, including legend clicks.
 - [x] Pan/zoom waveforms; pause/resume/reset history and observe a full wrap.
 - [x] Close each application normally.

@@ -19,6 +19,10 @@ validation enabled. Input was sent through X11 and results inspected in captures
   captures; reset cleared it and resume restarted samples.
 - Default example: secondary window closed/reopened; platform viewports produced
   a separate OS window, which could be moved and disabled again.
+- Standard variant: the default example rendered, demo visibility toggled, and
+  the secondary window opened/moved. Docking/viewport controls were absent as
+  expected. Normal close exited 0 with an empty Vulkan validation log. The
+  standard gallery/dashboard retain CI compile/render coverage.
 - Each application exited with status 0 using the window manager close button.
   The gallery's first Alt+F4 attempt exited 143; a repeat with the title-bar close
   button exited 0. Alt+F4 behavior should be checked on a user's desktop.
