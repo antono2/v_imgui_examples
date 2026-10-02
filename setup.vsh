@@ -16,31 +16,70 @@ fn run(command string) ! {
 }
 
 fn main() {
-	if os.args.len > 2
-		|| (os.args.len == 2 && os.args[1] !in ['--install', '--check', '-h', '--help']) {
-		eprintln('Usage: v run setup.vsh [--install|--check]')
+	project_dir := os.dir(os.real_path(@FILE))
+	mut mode := '--install'
+	mut example := 'glfw_vulkan'
+	mut index := 1
+	for index < os.args.len {
+		arg := os.args[index]
+		if arg in ['--install', '--check', '--build-only'] {
+			mode = arg
+		} else if arg == '--example' && index + 1 < os.args.len {
+			index++
+			example = os.args[index]
+		} else if arg in ['-h', '--help'] {
+			println('Usage: v run setup.vsh [--install|--check|--build-only] [--example glfw_vulkan|widget_gallery|implot_dashboard]')
+			return
+		} else {
+			eprintln('Unknown or incomplete option: ${arg}')
+			exit(2)
+		}
+		index++
+	}
+	if example !in ['glfw_vulkan', 'widget_gallery', 'implot_dashboard'] {
+		eprintln('Unknown desktop example: ${example}. For Android, use scripts/build_android.sh.')
 		exit(2)
 	}
-	if os.args.len == 2 && os.args[1] in ['-h', '--help'] {
-		println('Usage: v run setup.vsh [--install|--check]\n\nDefault: install and build ImGui, then compile this example.\n--check: run read-only dependency diagnostics.')
-		return
+	source := if example == 'glfw_vulkan' {
+		project_dir
+	} else {
+		os.join_path(project_dir, 'examples', example)
 	}
-	install := os.args.len == 1 || os.args[1] == '--install'
-	if install {
-		run('v install antono2.imgui') or { panic(err) }
+	module_dir := if os.getenv('VMODULES') == '' {
+		os.join_path(project_dir, 'build', 'modules')
+	} else {
+		os.vmodules_dir()
 	}
-	imgui_root := os.join_path(os.vmodules_dir(), 'antono2', 'imgui')
+	os.setenv('VMODULES', module_dir, true)
+	imgui_root := os.join_path(module_dir, 'antono2', 'imgui')
+	revision := os.read_file(os.join_path(project_dir, 'IMGUI_REVISION')) or { panic(err) }
+	if mode == '--install' {
+		os.mkdir_all(os.dir(imgui_root)) or { panic(err) }
+		if !os.is_file(os.join_path(imgui_root, 'v.mod')) {
+			run('git clone https://github.com/antono2/imgui.git ${os.quoted_path(imgui_root)}') or { panic(err) }
+		}
+		// Never discard changes in an existing dependency checkout.
+		status := os.execute('git -C ${os.quoted_path(imgui_root)} status --porcelain')
+		if status.exit_code != 0 || status.output.trim_space() != '' {
+			panic('ImGui dependency checkout contains changes; commit them or use a fresh VMODULES directory')
+		}
+		run('git -C ${os.quoted_path(imgui_root)} fetch origin ${revision.trim_space()}') or { panic(err) }
+		run('git -C ${os.quoted_path(imgui_root)} checkout --detach ${revision.trim_space()}') or { panic(err) }
+	}
+	current := os.execute('git -C ${os.quoted_path(imgui_root)} rev-parse HEAD')
+	if current.exit_code != 0 || current.output.trim_space() != revision.trim_space() {
+		panic('ImGui must match IMGUI_REVISION; run --install with a clean dependency checkout')
+	}
 	imgui_setup := os.join_path(imgui_root, 'setup.vsh')
 	if !os.is_file(imgui_setup) {
-		eprintln('antono2.imgui does not include setup.vsh; install or update it first')
-		exit(1)
+		panic('Run setup.vsh --install first to prepare the pinned ImGui dependency')
 	}
-	mode := if install { '--install' } else { '--check' }
-	run('v run ${os.quoted_path(imgui_setup)} ${mode}') or { panic(err) }
-	if !install {
+	if mode != '--build-only' {
+		run('v run ${os.quoted_path(imgui_setup)} ${mode}') or { panic(err) }
+	}
+	if mode == '--check' {
 		return
 	}
-	project_dir := os.dir(os.real_path(@FILE))
 	$if windows {
 		vulkan_sdk :=
 			os.execute('powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable(\'VULKAN_SDK\', \'Machine\')"')
@@ -48,7 +87,7 @@ fn main() {
 			os.setenv('VULKAN_SDK', vulkan_sdk.output.trim_space(), true)
 		}
 		runner := os.join_path(imgui_root, 'scripts', 'run_demo_windows.ps1')
-		run('powershell -NoProfile -ExecutionPolicy Bypass -File ${os.quoted_path(runner)} -BuildOnly -DemoDirectory ${os.quoted_path(project_dir)}') or {
+		run('powershell -NoProfile -ExecutionPolicy Bypass -File ${os.quoted_path(runner)} -BuildOnly -DemoDirectory ${os.quoted_path(project_dir)} -DemoSource ${os.quoted_path(source)}') or {
 			panic(err)
 		}
 	} $else {
@@ -65,11 +104,11 @@ fn main() {
 			os.setenv('GLFW_INCLUDE', os.join_path(prefix, 'include'), true)
 			os.setenv('GLFW_LIB', os.join_path(prefix, 'lib'), true)
 		}
-		executable := os.join_path(os.temp_dir(), 'v_imgui_demo_setup')
-		module_path := '${os.vmodules_dir()}/antono2|@vlib|@vmodules'
-		run('v -no-memory-limit -path ${os.quoted_path(module_path)} -o ${os.quoted_path(executable)} ${os.quoted_path(project_dir)}') or {
+		executable := os.join_path(project_dir, 'build', example)
+		module_path := '${module_dir}/antono2|@vlib|@vmodules'
+		run('v -no-memory-limit -path ${os.quoted_path(module_path)} -o ${os.quoted_path(executable)} ${os.quoted_path(source)}') or {
 			panic(err)
 		}
 	}
-	println('\nThe ImGui example compiled successfully. Run `v -no-memory-limit run .` from this checkout to open it.')
+	println('\nBuilt ${example}. On Linux/macOS, run build/${example}; on Windows, run the executable reported above.')
 }

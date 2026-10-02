@@ -6,7 +6,6 @@ module main
 // Note, flags are loaded on import
 import examples.glfw_vulkan
 
-
 fn main() {
-  glfw_vulkan.main()
+	glfw_vulkan.main()
 }

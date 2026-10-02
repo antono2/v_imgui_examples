@@ -28,3 +28,7 @@ main.cpp
 run.sh
 tmp.txt
 .editorconfig
+
+# Reproducible dependency checkouts and build artifacts
+build/
+*.apk
