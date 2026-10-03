@@ -26,7 +26,7 @@ function Invoke-Control([string] $Name) {
     $Pattern.Invoke()
 }
 function Toggle-Control([string] $Name) {
-    Write-Output "Toggle: $Name"
+    Write-Host "Toggle: $Name"
     $Pattern = (Require-Control $Name).GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
     $Pattern.Toggle()
     return $Pattern
@@ -48,8 +48,11 @@ try {
     $Last.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
     $null = Require-Control 'Selected Photo 0999.jpg'
     $List = (Require-Control 'Files').GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern)
+    Write-Output "Scroll before request: $($List.Current.VerticalScrollPercent)% (view $($List.Current.VerticalViewSize)%)"
     $List.SetScrollPercent(-1, 50)
-    $null = Wait-For { [Math]::Abs($List.Current.VerticalScrollPercent - 50) -lt 1 } 'Exact scroll percentage did not apply'
+    try {
+        $null = Wait-For { [Math]::Abs($List.Current.VerticalScrollPercent - 50) -lt 1 } 'Exact scroll percentage did not apply'
+    } finally { Write-Output "Scroll after request: $($List.Current.VerticalScrollPercent)% (view $($List.Current.VerticalViewSize)%)" }
     Select-Control 'Raw ImGui widgets'
     $null = Wait-For { (Require-Control 'Raw ImGui widgets').GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Current.IsSelected } 'Raw widget view did not open'
     Select-Control 'Accessible controls'; $null = Require-Control 'Name'
