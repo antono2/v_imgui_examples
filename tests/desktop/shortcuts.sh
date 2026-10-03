@@ -38,7 +38,12 @@ start_app() {
     sleep 0.1
   done
   test -n "$window"
-  xdotool windowactivate --sync "$window"
+  if ! timeout 10s xdotool windowactivate --sync "$window"; then
+    echo "Window manager did not activate $current_example" >&2
+    xprop -id "$window" _NET_WM_STATE >&2 || true
+    cat "$log_dir/window-manager.log" >&2
+    exit 1
+  fi
   sleep 0.3
 }
 geometry() {
