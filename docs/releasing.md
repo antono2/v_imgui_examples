@@ -11,7 +11,7 @@ Desktop ZIPs are ready to promote after reviewing the checks. Android APKs are
 signed outside CI with the persistent private release key:
 
 ```sh
-python3 scripts/sign_android_release.py \
+v run scripts/sign_android_release.v \
   --input /path/to/android-release-input-armeabi-v7a \
   --input /path/to/android-release-input-arm64-v8a \
   --input /path/to/android-release-input-x86_64 \

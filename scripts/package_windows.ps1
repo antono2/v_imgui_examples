@@ -18,8 +18,7 @@ $Crt = Get-ChildItem (Join-Path $env:VCToolsRedistDir 'x64') -Directory -Filter 
 if (-not $Crt) { throw 'The redistributable x64 C runtime was not found' }
 Get-ChildItem $Crt.FullName -Filter '*.dll' | Copy-Item -Destination $Output
 Copy-Item (Join-Path $env:VULKAN_SDK 'Bin/vulkan-1.dll') $Output
-python (Join-Path $PSScriptRoot 'collect_licenses.py') $Imgui $Licenses --target x86_64-pc-windows-msvc
-if ($LASTEXITCODE -ne 0) { throw 'License collection failed' }
+& (Join-Path $PSScriptRoot 'collect_licenses.ps1') -Imgui $Imgui -Output $Licenses
 $GlfwLicense = Get-ChildItem (Join-Path $Imgui 'build/shared-bundled-3.4') -Recurse -Filter 'LICENSE.md' |
     Where-Object { $_.FullName -match 'glfw-src' } | Select-Object -First 1
 if (-not $GlfwLicense) { throw 'GLFW license not found' }
@@ -43,7 +42,7 @@ foreach ($File in Get-ChildItem $Output -File | Where-Object { $_.Extension -in 
                 'oleaut32.dll','comdlg32.dll','shlwapi.dll','setupapi.dll','cfgmgr32.dll','ntdll.dll','ucrtbase.dll',
                 'ws2_32.dll','bcrypt.dll','crypt32.dll','secur32.dll','rpcrt4.dll','dwmapi.dll','version.dll',
                 'userenv.dll','imm32.dll','winmm.dll','msvcrt.dll','powrprof.dll','uxtheme.dll',
-                'hid.dll','winspool.drv','uiautomationcore.dll','propsys.dll','netapi32.dll','mswsock.dll',
+                'hid.dll','winspool.drv','uiautomationcore.dll','comctl32.dll','propsys.dll','netapi32.dll','mswsock.dll',
                 'normaliz.dll','d3d11.dll','dxgi.dll','opengl32.dll')
             if ($Name -notin $OsDlls -and $Name -notmatch '^(api|ext)-ms-') {
                 throw "Unbundled runtime dependency: $($File.Name) -> $Name"

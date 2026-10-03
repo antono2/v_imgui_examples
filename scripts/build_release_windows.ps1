@@ -9,13 +9,11 @@ Import-Module (Join-Path $InstallPath 'Common7\Tools\Microsoft.VisualStudio.DevS
 Enter-VsDevShell -VsInstallPath $InstallPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
 
 $ImguiRoot = Join-Path $env:GITHUB_WORKSPACE 'build\modules\antono2\imgui'
-python (Join-Path $ImguiRoot 'scripts/prepare-accesskit.py') --prebuilt
-if ($LASTEXITCODE -ne 0) { throw 'Could not prepare AccessKit' }
 v run (Join-Path $ImguiRoot 'build_vimgui.vsh') --linkage shared --glfw bundled --glfw-version 3.4
 if ($LASTEXITCODE -ne 0) { throw 'Could not build the native ImGui library' }
 
 $NativeBuild = Join-Path $ImguiRoot 'build\shared-bundled-3.4'
-cmake -S $ImguiRoot -B $NativeBuild -DVIMGUI_APPLICATION_UI=ON "-DACCESSKIT_DIR=$ImguiRoot/.dependencies/accesskit/accesskit-c-0.23.1"
+cmake -S $ImguiRoot -B $NativeBuild -DVIMGUI_APPLICATION_UI=ON
 if ($LASTEXITCODE -ne 0) { throw 'Accessible native configure failed' }
 cmake --build $NativeBuild --config Release --parallel 4
 if ($LASTEXITCODE -ne 0) { throw 'Accessible native build failed' }

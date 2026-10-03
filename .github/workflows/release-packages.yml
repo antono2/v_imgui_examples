@@ -14,9 +14,9 @@ jobs:
         variant: [docking, standard]
         include:
           - variant: docking
-            imgui-ref: c093593eeb5685ab4c40b308b9773b51fec37ffe
+            imgui-ref: 161bd5fa99d35fec1192b62cf22348ed785c3277
           - variant: standard
-            imgui-ref: 253cb56d86ab6bb79283980d57ea42e64f091734
+            imgui-ref: 8067a7bb52a24e28ca4fbb7f35ff486d224ce91f
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
@@ -42,7 +42,7 @@ jobs:
           path: build/modules/antono2/glfw
       - name: Install Linux build and rendering tools
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb patchelf python3-gi python3-dbus gir1.2-atspi-2.0 xdotool
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb patchelf zip xdotool
       - name: Install Windows Vulkan build tools
         if: runner.os == 'Windows'
         shell: bash
@@ -65,11 +65,19 @@ jobs:
         run: bash scripts/build_release_linux.sh '${{ matrix.variant }}'
       - name: Exercise bundled gallery through native AT-SPI
         if: runner.os == 'Linux'
-        run: dbus-run-session -- xvfb-run -a /usr/bin/python3 tests/desktop/accessibility.py "build/v-imgui-examples-linux-x64-${{ matrix.variant }}/widget_gallery" "build/release-atspi-${{ matrix.variant }}.log"
+        run: |
+          c++ -std=c++17 tests/desktop/accessibility.cpp $(pkg-config --cflags --libs atspi-2 gio-2.0) -o build/accessibility-check
+          GSETTINGS_BACKEND=memory dbus-run-session -- xvfb-run -a build/accessibility-check "build/v-imgui-examples-linux-x64-${{ matrix.variant }}/widget_gallery" "build/release-atspi-${{ matrix.variant }}.log"
       - name: Build and audit Windows release DLLs
         if: runner.os == 'Windows'
         shell: pwsh
         run: scripts/build_release_windows.ps1 -Variant '${{ matrix.variant }}'
+      - name: Exercise native Windows UI Automation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe"
+          if ($LASTEXITCODE -ne 0) { throw 'Native UI Automation check failed' }
       - name: Upload portable desktop package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -110,14 +118,7 @@ jobs:
       - name: Build accessible touch app
         run: bash scripts/build_android.sh --build-only
       - name: Collect Android notices
-        run: |
-          case "$ANDROID_ABI" in
-            armeabi-v7a) target=armv7-linux-androideabi ;;
-            arm64-v8a) target=aarch64-linux-android ;;
-            x86_64) target=x86_64-linux-android ;;
-          esac
-          python3 scripts/collect_licenses.py build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" --target "$target"
-          cp packaging/ROBOTO-LICENSE.txt "build/android-touch-$ANDROID_ABI/licenses/roboto-license.txt"
+        run: bash scripts/collect_licenses.sh build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
       - name: Upload unsigned APK and notices for release signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

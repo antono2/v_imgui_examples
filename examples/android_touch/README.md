@@ -43,8 +43,8 @@ checks do not establish correct behavior on a real keyboard or device.
 Release APKs use the application/accessibility layer in this same V UI. Set
 `VIMGUI_ANDROID_APPLICATION_UI=1` before running the build script to enable
 labelled native accessibility controls, high contrast and the touch-sized theme.
-This build also needs Rust and the selected Android Rust target; the upstream
-script prepares the pinned AccessKit sources and builds its native adapter.
+This build uses the Android SDK/NDK and Java toolchain; the upstream
+script builds the native C++ accessibility bridge and Java node provider.
 The host retains ownership of the input bridge, lifecycle and safe area.
 
 End users only download and install an APK; follow

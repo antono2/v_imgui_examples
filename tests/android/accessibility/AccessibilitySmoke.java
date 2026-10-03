@@ -128,7 +128,8 @@ public final class AccessibilitySmoke extends Instrumentation {
             SystemClock.sleep(500);
             Rect before=new Rect();node("Tap counter").getBoundsInScreen(before);
             Rect instructions=new Rect();node("Copy uses the entire editable field; no selection is needed. Read displays the clipboard below.").getBoundsInScreen(instructions);
-            if(instructions.height()>0 && instructions.top>150) {
+            if(!(instructions.height()>0 && instructions.top>150))throw new AssertionError("Static swipe target is not visible");
+            {
                 drag(instructions.centerX(),instructions.centerY(),100);
                 await(() -> {Rect after=new Rect();node("Tap counter").getBoundsInScreen(after);return after.top<before.top-10?Boolean.TRUE:null;},"Content swipe did not scroll");
             }
