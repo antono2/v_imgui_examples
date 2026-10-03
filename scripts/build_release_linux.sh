@@ -9,10 +9,10 @@ v=${V_BIN:-v}
 python3 "$imgui/scripts/prepare-accesskit.py"
 "$v" run "$imgui/build_vimgui.vsh" --linkage shared --glfw system
 accesskit="$imgui/.dependencies/accesskit/accesskit-c-0.23.1"
-cmake -S "$imgui" -B "$imgui/build/shared-system" \
-  -DVIMGUI_APPLICATION_UI=ON "-DACCESSKIT_DIR=$accesskit" \
+cmake -S "$imgui" -B "$imgui/build/shared-system-3.3" \
+  -DVIMGUI_APPLICATION_UI=ON "-DVIMGUI_OUTPUT_DIR=$imgui/lib" "-DACCESSKIT_DIR=$accesskit" \
   "-DVIMGUI_ACCESSKIT_STATIC_LIBRARY=$accesskit/target/release/libaccesskit.a"
-cmake --build "$imgui/build/shared-system" --parallel 4
+cmake --build "$imgui/build/shared-system-3.3" --parallel 4
 binaries="$root/build/release-binaries-$variant"
 mkdir -p "$binaries"
 for example in glfw_vulkan widget_gallery implot_dashboard; do
