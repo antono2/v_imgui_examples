@@ -3,7 +3,7 @@ module glfw_vulkan
 import antono2.glfw
 import math
 
-// Keep a regular GLFW window, covering its monitor without changing video modes.
+// Use the monitor's current video mode for GLFW's windowed fullscreen mode.
 struct WindowMode {
 mut:
 	fullscreen bool
@@ -66,13 +66,10 @@ fn (mut mode WindowMode) toggle(window &glfw.Window) {
 	if isnil(video) {
 		return
 	}
-	mut mx := i32(0)
-	mut my := i32(0)
-	glfw.get_monitor_pos(selected, &mx, &my)
 	mode.decorated = glfw.get_window_attrib(window, glfw.decorated)
 	mode.maximized = glfw.get_window_attrib(window, glfw.maximized) != 0
 	if mode.maximized { glfw.restore_window(window) }
 	glfw.set_window_attrib(window, glfw.decorated, 0)
-	glfw.set_window_monitor(window, unsafe { nil }, mx, my, video.width, video.height, glfw.dont_care)
+	glfw.set_window_monitor(window, selected, 0, 0, video.width, video.height, video.refreshRate)
 	mode.fullscreen = true
 }

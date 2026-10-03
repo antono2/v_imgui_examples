@@ -47,6 +47,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 	// Create window with Vulkan context
 	glfw.window_hint(glfw.client_api, glfw.no_api)
+	// Borderless fullscreen should remain available when switching applications.
+	glfw.window_hint(glfw.auto_iconify, 0)
 
 	main_scale := f32(1.0)
 	window := glfw.create_windowed(i32(1200 * main_scale), i32(800 * main_scale), options.title) or {

@@ -5,6 +5,11 @@ binary_dir=$(cd -- "${1:?Usage: shortcuts.sh binary-dir [--raw-gallery]}" && pwd
 if [[ ${VIMGUI_SHORTCUT_TEST_SESSION:-0} != 1 ]]; then
   exec env VIMGUI_SHORTCUT_TEST_SESSION=1 xvfb-run -a -s '-screen 0 1600x1000x24' bash "$0" "$binary_dir" "${2:-}"
 fi
+lavapipe=(/usr/share/vulkan/icd.d/lvp_icd*.json)
+test -f "${lavapipe[0]}"
+export VK_DRIVER_FILES="${lavapipe[0]}"
+export VK_ICD_FILENAMES="$VK_DRIVER_FILES"
+export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation
 log_dir="$binary_dir/shortcut-logs"
 mkdir -p "$log_dir"
 app_pid=''
@@ -22,6 +27,7 @@ for i in {1..100}; do
 done
 window=''
 start_app() {
+  current_example=$1
   "$binary_dir/$1" > "$log_dir/$1.log" 2>&1 &
   app_pid=$!
   window=''
@@ -50,13 +56,22 @@ wait_geometry() {
 quit_app() {
   xdotool key Escape
   for i in {1..100}; do
-    if ! kill -0 "$app_pid" 2>/dev/null; then wait "$app_pid"; app_pid=''; return; fi
+    if ! kill -0 "$app_pid" 2>/dev/null; then
+      wait "$app_pid"
+      app_pid=''
+      if grep -Eiq 'VUID-|validation error|segmentation|assert|fatal' "$log_dir/$current_example.log"; then
+        cat "$log_dir/$current_example.log" >&2
+        return 1
+      fi
+      return
+    fi
     sleep 0.05
   done
   echo 'Escape did not quit the example' >&2
   exit 1
 }
 fullscreen=$'X=0\nY=0\nWIDTH=1600\nHEIGHT=1000'
+desktop_mode=$(xrandr --current)
 for example in glfw_vulkan widget_gallery implot_dashboard; do
   start_app "$example"
   normal=$(geometry)
@@ -68,10 +83,7 @@ for example in glfw_vulkan widget_gallery implot_dashboard; do
   test "$(geometry)" == "$fullscreen"
   xdotool keyup F11
   xprop -id "$window" _NET_FRAME_EXTENTS | grep -q '= 0, 0, 0, 0'
-  if xprop -id "$window" _NET_WM_STATE | grep -q '_NET_WM_STATE_FULLSCREEN'; then
-    echo 'Expected a regular borderless window, not exclusive fullscreen' >&2
-    exit 1
-  fi
+  test "$(xrandr --current)" == "$desktop_mode"
   sleep 0.1
   xdotool key F11
   wait_geometry "$normal"

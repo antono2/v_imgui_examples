@@ -36,6 +36,8 @@ scripts/smoke_desktop.sh "$PWD/build"
 Run `./tests/desktop/shortcuts.sh binary-dir --raw-gallery` for keyboard checks
 of source builds, or omit `--raw-gallery` for accessible release builds. The
 check uses its own Xvfb display with Openbox, xdotool, xprop and wmctrl.
+It also checks that the display mode is unchanged and enables Vulkan validation
+while toggling fullscreen. These keyboard checks were verified locally on Linux.
 
 ## Android interaction
 
