@@ -42,7 +42,7 @@ jobs:
           path: build/modules/antono2/glfw
       - name: Install Linux build and rendering tools
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb patchelf zip xdotool openbox x11-utils x11-xserver-utils wmctrl
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers ripgrep gdb xvfb patchelf zip xdotool openbox x11-utils x11-xserver-utils wmctrl
       - name: Install Windows Vulkan build tools
         if: runner.os == 'Windows'
         shell: bash
@@ -70,7 +70,9 @@ jobs:
           GSETTINGS_BACKEND=memory dbus-run-session -- xvfb-run -a build/accessibility-check "build/v-imgui-examples-linux-x64-${{ matrix.variant }}/widget_gallery" "build/release-atspi-${{ matrix.variant }}.log"
       - name: Check bundled desktop keyboard shortcuts
         if: runner.os == 'Linux'
-        run: ./tests/desktop/shortcuts.sh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
+        run: |
+          sudo sysctl kernel.yama.ptrace_scope=0
+          ./tests/desktop/shortcuts.sh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
       - name: Build and audit Windows release DLLs
         if: runner.os == 'Windows'
         shell: pwsh

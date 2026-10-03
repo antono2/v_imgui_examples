@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 binary_dir="${1:?Usage: scripts/smoke_desktop.sh path/to/binaries}"
+command -v rg >/dev/null
 log_dir="$binary_dir/smoke-logs"
 mkdir -p "$log_dir"
 lavapipe=(/usr/share/vulkan/icd.d/lvp_icd*.json)
