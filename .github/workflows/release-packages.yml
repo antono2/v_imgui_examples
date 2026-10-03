@@ -14,9 +14,9 @@ jobs:
         variant: [docking, standard]
         include:
           - variant: docking
-            imgui-ref: f13c1c8e6a79e81df9867155c589e5eeafa17b37
+            imgui-ref: 29212746b9c6a5e0d52c4105d0f354ce0082c338
           - variant: standard
-            imgui-ref: d66ee51490378ab651f1f184cff9eff0949dc20a
+            imgui-ref: 104cefe3956baac738a9150379d9adfe7ff49c14
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
