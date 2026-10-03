@@ -63,9 +63,9 @@ try {
     $null = Wait-For { $Value.Current.Value -eq $Unicode } 'Unicode native edit did not round-trip'
     $Text = $Field.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern)
     $Range = $Text.DocumentRange.Clone()
-    $Range.MoveEndpointByRange([System.Windows.Automation.TextPatternRangeEndpoint]::End, $Range, [System.Windows.Automation.TextPatternRangeEndpoint]::Start)
-    $null = $Range.MoveEndpointByUnit([System.Windows.Automation.TextPatternRangeEndpoint]::Start, [System.Windows.Automation.TextUnit]::Character, 1)
-    $null = $Range.MoveEndpointByUnit([System.Windows.Automation.TextPatternRangeEndpoint]::End, [System.Windows.Automation.TextUnit]::Character, 1)
+    $Range.MoveEndpointByRange([System.Windows.Automation.Text.TextPatternRangeEndpoint]::End, $Range, [System.Windows.Automation.Text.TextPatternRangeEndpoint]::Start)
+    $null = $Range.MoveEndpointByUnit([System.Windows.Automation.Text.TextPatternRangeEndpoint]::Start, [System.Windows.Automation.Text.TextUnit]::Character, 1)
+    $null = $Range.MoveEndpointByUnit([System.Windows.Automation.Text.TextPatternRangeEndpoint]::End, [System.Windows.Automation.Text.TextUnit]::Character, 1)
     $Range.Select()
     $Camera = [string][char]0xd83d + [char]0xdcf7
     $null = Wait-For { $Selection = $Text.GetSelection(); $Selection.Count -eq 1 -and $Selection[0].GetText(-1) -eq $Camera } 'Unicode selection did not round-trip'
