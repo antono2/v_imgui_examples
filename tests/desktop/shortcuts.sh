@@ -31,13 +31,18 @@ start_app() {
   "$binary_dir/$1" > "$log_dir/$1.log" 2>&1 &
   app_pid=$!
   window=''
-  for i in {1..100}; do
+  for i in {1..300}; do
     window=$(xdotool search --onlyvisible --name '^V ImGui:' 2>/dev/null | head -1 || true)
     if [[ -n "$window" ]]; then break; fi
     if ! kill -0 "$app_pid" 2>/dev/null; then cat "$log_dir/$1.log"; echo "Failed to open $1" >&2; exit 1; fi
     sleep 0.1
   done
-  test -n "$window"
+  if [[ -z "$window" ]]; then
+    echo "No visible window appeared for $current_example within 30 seconds" >&2
+    cat "$log_dir/$current_example.log" >&2
+    cat "$log_dir/window-manager.log" >&2
+    exit 1
+  fi
   if ! timeout 10s xdotool windowactivate --sync "$window"; then
     echo "Window manager did not activate $current_example" >&2
     xprop -id "$window" _NET_WM_STATE >&2 || true
