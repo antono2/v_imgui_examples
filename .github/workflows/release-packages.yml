@@ -14,9 +14,9 @@ jobs:
         variant: [docking, standard]
         include:
           - variant: docking
-            imgui-ref: fb026c199b0e75041b5dca4105e8084b1d4163fb
+            imgui-ref: 711f5ecc0ff640fd843b2beef7d58d5875ab6cf6
           - variant: standard
-            imgui-ref: a2e819c1d868c2ee9ddd74c4dccfce54532a8f35
+            imgui-ref: e2af1b90fd86cd014cad9a3c0623aa5895c31f77
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
@@ -46,7 +46,7 @@ jobs:
       - name: Install Windows Vulkan build tools
         if: runner.os == 'Windows'
         shell: bash
-        run: bash build/modules/antono2/imgui/.github/scripts/setup-vulkan-ci.sh 1.4.309.0 v1.2
+        run: v run build/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh 1.4.309.0 v1.2
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         if: runner.os == 'Windows'
         with:
@@ -86,7 +86,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          powershell.exe -Mta -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe"
+          . scripts/setup_windows_build.ps1
+          cl.exe /nologo /std:c++17 /EHsc tests/desktop/windows_text.cpp /Febuild/windows-text-check.exe /Fobuild/windows-text-check.obj /link uiautomationcore.lib ole32.lib oleaut32.lib
+          if ($LASTEXITCODE -ne 0) { throw 'Native text probe build failed' }
+          powershell.exe -Mta -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe" -SelectionProbe "$PWD/build/windows-text-check.exe"
           if ($LASTEXITCODE -ne 0) { throw 'Native UI Automation check failed' }
       - name: Upload portable desktop package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -1,4 +1,4 @@
-param([Parameter(Mandatory)] [string] $Executable)
+param([Parameter(Mandatory)] [string] $Executable, [Parameter(Mandatory)] [string] $SelectionProbe)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
@@ -61,14 +61,10 @@ try {
     $Value = $Field.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
     $Value.SetValue($Unicode)
     $null = Wait-For { $Value.Current.Value -eq $Unicode } 'Unicode native edit did not round-trip'
-    $Text = $Field.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern)
-    $Range = $Text.DocumentRange.Clone()
-    $Range.MoveEndpointByRange([System.Windows.Automation.Text.TextPatternRangeEndpoint]::End, $Range, [System.Windows.Automation.Text.TextPatternRangeEndpoint]::Start)
-    $null = $Range.MoveEndpointByUnit([System.Windows.Automation.Text.TextPatternRangeEndpoint]::Start, [System.Windows.Automation.Text.TextUnit]::Character, 1)
-    $null = $Range.MoveEndpointByUnit([System.Windows.Automation.Text.TextPatternRangeEndpoint]::End, [System.Windows.Automation.Text.TextUnit]::Character, 1)
-    $Range.Select()
-    $Camera = [string][char]0xd83d + [char]0xdcf7
-    $null = Wait-For { $Selection = $Text.GetSelection(); $Selection.Count -eq 1 -and $Selection[0].GetText(-1) -eq $Camera } 'Unicode selection did not round-trip'
+    # The legacy .NET selected-range wrapper crashes even against system RichEdit
+    # on this runner. Exercise the same selection round trip with native UIA.
+    & $SelectionProbe $Handle.ToInt64().ToString()
+    if ($LASTEXITCODE -ne 0) { throw 'Native Unicode selection check failed' }
     Write-Output 'PASS: native UIA roles, actions, checkbox state, text scaling, virtual selection, exact scrolling, views and Unicode text/selection'
 } finally {
     if (-not $Process.HasExited) { Stop-Process -Id $Process.Id -Force }
