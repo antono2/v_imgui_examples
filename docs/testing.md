@@ -46,6 +46,7 @@ Install the matching debug APK; its launcher label is **V ImGui Touch Examples**
 - [x] Rotate while editing; confirm text, count, and zoom survive window recreation.
 - [x] Background/resume the app and repeat an edit.
 - [x] Change zoom, use portrait/landscape, and reach the bottom controls by scrolling.
+- [x] Adapt to visible/hidden navigation bars and keyboard; keep the bottom controls inside the usable area.
 - [x] Relaunch after process termination; confirm the sample starts with fresh state.
 - [x] Check logcat for crashes, Vulkan errors, or failed input initialization.
 

@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: f5818aa7ceab8bfa9a2003af47e244dce91b5adf
+          ref: f7988c7e5568b894d8846861e74c76cdf103939b
           path: build/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

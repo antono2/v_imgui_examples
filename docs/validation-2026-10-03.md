@@ -71,9 +71,8 @@ visible DE/EN layout. Installed the signed debug APK built from `f3b6eda`.
   helper uninstalled. The corrected sample APK remains installed for user testing.
 
 Other Android ABIs have build coverage only. No iOS, screen-reader, or physical
-Windows interaction is claimed. The fullscreen host renders beneath the native
-keyboard/navigation overlay; scrolling or hiding the keyboard may be needed to
-see controls. Review this behavior during the user's final release testing.
+Windows interaction is claimed. The original fullscreen layout rendered beneath the native keyboard/navigation
+overlay. The content-area follow-up below corrects this behavior.
 
 Captures and logs are local under the ignored `build/interaction-checks/` directory.
 The release checklist remains the source of the remaining checks.
@@ -115,3 +114,30 @@ The corrected armeabi-v7a APK was rebuilt and installed on the same tablet:
 The corrected APK remains installed. These are tablet checks, including its
 800-pixel portrait layout; physical phone and assistive-technology interaction
 remain outside this coverage.
+
+## Automatic Android content area follow-up
+
+Replaced the fixed navigation spacer with NativeActivity's current content
+rectangle. Both upstream host variants publish its clamped position and size as
+the main viewport's work area and pass its dimensions to the V callback. The V
+window uses that position and size every frame. Rendering and input coordinates
+stay relative to the full native surface. The host reads the rectangle under
+the native-app-glue mutex; an uninitialized/empty rectangle falls back to the
+full display. The built-in upstream V sample also uses the work area.
+
+On the same Android 13 tablet, the rebuilt APK passed:
+
+- Landscape: 1280×800 surface, GUI bottom at y=736, navigation bar below it.
+  Swiping to the end left the complete checklist above the bar without a dummy
+  bottom spacer.
+- Portrait: GUI bottom at y=1216 on the 800×1280 surface; navigation bar remained
+  outside the GUI. The typed `InsetsCheck` survived rotation.
+- Gboard: the GUI shortened above the keyboard (y=373 in the landscape capture)
+  and expanded when Back hid it; text entry remained functional.
+- Temporarily hiding navigation with Android's immersive policy expanded the GUI
+  to the full portrait height. Restoring visibility restored the reserved area.
+  The original absent policy and original rotation settings were restored.
+
+This tests dynamic visible/hidden software navigation on one tablet. Hardware
+buttons, side navigation bars, and display cutouts were not physically tested;
+the layout uses all four reported content edges instead of assuming a bar size.

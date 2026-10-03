@@ -26,7 +26,7 @@ fn edit_text(mut data imgui.InputTextCallbackData) i32 {
 // It calls this export between NewFrame and Render on its rendering thread.
 @[export: 'vimgui_android_demo_draw_ui']
 fn draw_ui(zoom &f32, taps &int, text &char, text_capacity int, clipboard &char, clipboard_capacity int, width f32, height f32) bool {
-	imgui.set_next_window_pos(imgui.ImVec2_c{}, imgui.Cond(imgui.Cond_.always), imgui.ImVec2_c{})
+	imgui.set_next_window_pos(imgui.get_main_viewport().WorkPos, imgui.Cond(imgui.Cond_.always), imgui.ImVec2_c{})
 	imgui.set_next_window_size(imgui.ImVec2_c{ x: width, y: height }, imgui.Cond(imgui.Cond_.always))
 	flags := imgui.WindowFlags(int(imgui.WindowFlags_.no_move) | int(imgui.WindowFlags_.no_resize) | int(imgui.WindowFlags_.no_collapse))
 	mut zoom_changed := false
@@ -104,8 +104,6 @@ fn draw_ui(zoom &f32, taps &int, text &char, text_capacity int, clipboard &char,
 		if imgui.collapsing_header_tree_node_flags(c'Testing checklist', 0) {
 			imgui.text_wrapped(c'1. Type non-ASCII text and replace a selection.\n2. Hide the keyboard with Back, then tap the field again.\n3. Copy and read text.\n4. Rotate, background, and resume.\n5. Change zoom and reach the bottom controls.')
 		}
-		// Leave room above Android's navigation overlay when scrolled to the end.
-		imgui.dummy(imgui.ImVec2_c{ y: imgui.get_font_size() * 3 })
 		touch_scroll()
 	}
 	imgui.end()
