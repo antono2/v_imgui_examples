@@ -50,7 +50,8 @@ try {
     $List = (Require-Control 'Files').GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern)
     $List.SetScrollPercent(-1, 50)
     $null = Wait-For { [Math]::Abs($List.Current.VerticalScrollPercent - 50) -lt 1 } 'Exact scroll percentage did not apply'
-    Select-Control 'Raw ImGui widgets'; $null = Require-Control 'Accessible controls'
+    Select-Control 'Raw ImGui widgets'
+    $null = Wait-For { (Require-Control 'Raw ImGui widgets').GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Current.IsSelected } 'Raw widget view did not open'
     Select-Control 'Accessible controls'; $null = Require-Control 'Name'
     $Unicode = 'A' + [char]0xd83d + [char]0xdcf7 + 'e' + [char]0x0301 + 'Z'
     $Field = Require-Control 'Name'
