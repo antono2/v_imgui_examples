@@ -74,6 +74,10 @@ and view switching. Windows bundles are checked for missing imported runtime
 DLLs. The Windows workflow also opens the packaged gallery in a runner's user
 session and checks UI Automation actions, text/selection, list selection and
 exact scroll percentages. Narrator speech still needs manual validation.
+Unicode selected-text reads use the native `IUIAutomation` client API. The
+legacy .NET selected-range wrapper also crashes against Windows' built-in
+RichEdit on this runner; the comparison and reproduction instructions are in
+[upstream's text checks](https://github.com/antono2/imgui/blob/master/tests/accessibility/README.md).
 
 On the connected Android tablet, the integrated accessibility build passed native
 roles/actions, checkbox state, progress ranges, Unicode text and UTF-16 selection,

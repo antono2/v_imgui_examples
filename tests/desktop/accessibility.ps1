@@ -63,7 +63,7 @@ try {
     $null = Wait-For { $Value.Current.Value -eq $Unicode } 'Unicode native edit did not round-trip'
     # The legacy .NET selected-range wrapper crashes even against system RichEdit
     # on this runner. Exercise the same selection round trip with native UIA.
-    & $SelectionProbe $Handle.ToInt64().ToString()
+    & $SelectionProbe ($Handle.ToInt64().ToString())
     if ($LASTEXITCODE -ne 0) { throw 'Native Unicode selection check failed' }
     Write-Output 'PASS: native UIA roles, actions, checkbox state, text scaling, virtual selection, exact scrolling, views and Unicode text/selection'
 } finally {
