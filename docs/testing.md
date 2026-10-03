@@ -63,7 +63,9 @@ The portable workflow renders each Linux bundle after copying its dependencies
 and exercises the gallery through the real AT-SPI bus, including native roles,
 button actions, status, high contrast, 200% text, off-screen list focus/selection
 and view switching. Windows bundles are checked for missing imported runtime
-DLLs. Graphical Windows/UI Automation behavior still needs a Windows user session.
+DLLs. The Windows workflow also opens the packaged gallery in a runner's user
+session and checks UI Automation actions, text/selection, list selection and
+exact scroll percentages. Narrator speech still needs manual validation.
 
 On the connected Android tablet, the integrated accessibility build passed native
 roles/actions, checkbox state, progress ranges, Unicode text and UTF-16 selection,
@@ -71,3 +73,9 @@ full-field clipboard copy/read and feedback, zoom, scrolling from static text,
 and resume state. Repeat with the final release APK and test portrait/landscape,
 visible system navigation bars and IME. Check TalkBack spoken navigation manually;
 provider action tests do not establish the quality of spoken announcements.
+
+To run instrumentation against a signed release APK, set
+`VIMGUI_ANDROID_TEST_APK`, `VIMGUI_ANDROID_TEST_KEYSTORE` and
+`VIMGUI_ANDROID_TEST_PASSWORD_FILE` before running
+`scripts/test_android_accessibility.sh`. A debug installation with a different
+certificate must be removed first; uninstalling it removes its saved demo data.

@@ -19,13 +19,18 @@ mapfile -d '' class_files < <(find "$package/classes" -name '*.class' -print0)
   -I "$android_jar" -F "$package/unsigned.apk"
 (cd "$package/dex"; "$build_tools/aapt" add "$package/unsigned.apk" classes.dex)
 "$build_tools/zipalign" -f 4 "$package/unsigned.apk" "$package/aligned.apk"
-"$build_tools/apksigner" sign --ks "$build/debug.keystore" --ks-pass pass:android --key-pass pass:android \
+keystore=${VIMGUI_ANDROID_TEST_KEYSTORE:-$build/debug.keystore}
+password=(--ks-pass pass:android)
+if [[ -n ${VIMGUI_ANDROID_TEST_PASSWORD_FILE:-} ]]; then
+  password=(--ks-pass "file:$VIMGUI_ANDROID_TEST_PASSWORD_FILE")
+fi
+"$build_tools/apksigner" sign --ks "$keystore" "${password[@]}" \
   --out "$package/test.apk" "$package/aligned.apk"
 "$build_tools/apksigner" verify "$package/test.apk"
 "${adb[@]}" shell input keyevent 224
 "${adb[@]}" shell wm dismiss-keyguard
 "${adb[@]}" shell am force-stop io.antono2.vimgui.examples.touch
-"${adb[@]}" install -r "$build/vimgui-demo-$abi.apk"
+"${adb[@]}" install -r "${VIMGUI_ANDROID_TEST_APK:-$build/vimgui-demo-$abi.apk}"
 "${adb[@]}" install -r "$package/test.apk"
 "${adb[@]}" shell am instrument -w \
   io.antono2.vimgui.examples.touch.test/io.antono2.vimgui.examples.touch.test.AccessibilitySmoke | tee "$package/instrumentation.log"
