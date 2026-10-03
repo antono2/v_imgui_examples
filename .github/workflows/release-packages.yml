@@ -84,7 +84,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe"
+          powershell.exe -Mta -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe"
           if ($LASTEXITCODE -ne 0) { throw 'Native UI Automation check failed' }
       - name: Upload portable desktop package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
