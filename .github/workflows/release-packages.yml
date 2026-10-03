@@ -1,0 +1,144 @@
+name: Portable release packages
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+        variant: [docking, standard]
+        include:
+          - variant: docking
+            imgui-ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
+          - variant: standard
+            imgui-ref: 48d6c6614ead130450791a72179f711f4090a7e8
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      VMODULES: ${{ github.workspace }}/build/modules
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-v
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: antono2/imgui
+          ref: ${{ matrix.imgui-ref }}
+          path: build/modules/antono2/imgui
+          submodules: recursive
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: antono2/vulkan
+          ref: v3.2.0
+          path: build/modules/antono2/vulkan
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: antono2/glfw
+          ref: v2.0.0
+          path: build/modules/antono2/glfw
+      - name: Install Linux build and rendering tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers ripgrep gdb xvfb patchelf zip xdotool openbox x11-utils x11-xserver-utils wmctrl
+      - name: Install Windows Vulkan build tools
+        if: runner.os == 'Windows'
+        shell: bash
+        run: v run build/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh 1.4.309.0 v1.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: runner.os == 'Windows'
+        with:
+          repository: zeux/volk
+          ref: 58689c063427f5bad4f133625049b1a3c5dd8287
+          path: build/volk
+      - name: Install Windows Volk header
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $Destination = Join-Path $env:VULKAN_SDK 'Include/volk'
+          New-Item -ItemType Directory -Force $Destination | Out-Null
+          Copy-Item build/volk/volk.h, build/volk/volk.c $Destination
+      - name: Build, bundle and render Linux releases
+        if: runner.os == 'Linux'
+        run: ./scripts/build_release.v '${{ matrix.variant }}'
+      - name: Exercise bundled gallery through native AT-SPI
+        if: runner.os == 'Linux'
+        run: |
+          c++ -std=c++17 tests/desktop/accessibility.cpp $(pkg-config --cflags --libs atspi-2 gio-2.0) -o build/accessibility-check
+          GSETTINGS_BACKEND=memory dbus-run-session -- xvfb-run -a build/accessibility-check "build/v-imgui-examples-linux-x64-${{ matrix.variant }}/widget_gallery" "build/release-atspi-${{ matrix.variant }}.log"
+      - name: Check bundled desktop keyboard shortcuts
+        if: runner.os == 'Linux'
+        run: |
+          sudo sysctl kernel.yama.ptrace_scope=0
+          ./tests/desktop/shortcuts.sh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
+      - name: Build and audit Windows release DLLs
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          . scripts/setup_windows_build.ps1
+          v -prod run scripts/build_release.v '${{ matrix.variant }}'
+          if ($LASTEXITCODE -ne 0) { throw 'Portable release build failed' }
+          & "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/examples.exe" --help
+          if ($LASTEXITCODE -ne 0) { throw 'Examples launcher failed' }
+      - name: Exercise native Windows UI Automation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          . scripts/setup_windows_build.ps1
+          cl.exe /nologo /std:c++17 /EHsc tests/desktop/windows_text.cpp /Febuild/windows-text-check.exe /Fobuild/windows-text-check.obj /link uiautomationcore.lib ole32.lib oleaut32.lib
+          if ($LASTEXITCODE -ne 0) { throw 'Native text probe build failed' }
+          powershell.exe -Mta -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe" -SelectionProbe "$PWD/build/windows-text-check.exe"
+          if ($LASTEXITCODE -ne 0) { throw 'Native UI Automation check failed' }
+      - name: Upload portable desktop package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-${{ runner.os }}-${{ matrix.variant }}
+          path: build/v-imgui-examples-*.zip
+          if-no-files-found: error
+      - name: Upload rendering logs
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: render-${{ matrix.variant }}
+          path: |
+            build/v-imgui-examples-linux-*/smoke-logs
+            build/v-imgui-examples-linux-*/shortcut-logs
+
+  android:
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a, x86_64]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      ANDROID_ABI: ${{ matrix.abi }}
+      VIMGUI_ANDROID_APPLICATION_UI: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-v
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android build tools
+        run: |
+          sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
+      - name: Build accessible touch app
+        run: bash scripts/build_android.sh --build-only
+      - name: Collect Android notices
+        run: ./scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
+      - name: Upload unsigned APK and notices for release signing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-release-input-${{ matrix.abi }}
+          path: |
+            build/android-touch-${{ matrix.abi }}/vimgui-demo-unsigned.apk
+            build/android-touch-${{ matrix.abi }}/licenses
+          if-no-files-found: error

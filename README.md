@@ -19,15 +19,49 @@ with Vulkan validation in both standard and docking variants; Windows compiles
 all desktop examples. Android CI builds debug APKs for three ABIs. Device testing
 is required before release; see [the testing checklist](docs/testing.md).
 
-## Recommended quick start
+## Try a release
 
-From this checkout, the cross-platform setup installs/builds ImGui and compiles
-the example without opening a window:
+[Download a release](https://github.com/antono2/v_imgui_examples/releases) and follow
+[installation instructions](docs/installing-releases.md). Desktop ZIPs bundle
+their application runtime libraries; Android APKs include their native libraries
+and font. The gallery and Android app include labelled native accessibility
+controls, high contrast and text sizing. Choose **Docking** unless you specifically
+want the Standard variant.
+
+- **Windows:** extract the ZIP and open `examples.exe` to choose an example.
+- **Linux:** extract the ZIP and run `./run.sh` for the example menu.
+- **Android:** install the universal APK and open **V ImGui Touch Examples**.
+
+In each desktop example, **Escape** quits when a control is not using it to
+cancel an edit, drag, popup or navigation operation. **F11** toggles borderless
+fullscreen on the window's monitor; pressing it again restores the window.
+
+## Build from source
+
+Install V and Git, then run this command from the checkout:
 
 ```sh
-v run setup.vsh
-v run setup.vsh --example widget_gallery
-v run setup.vsh --example implot_dashboard
+./setup.vsh
+```
+
+Use the official V compiler. The tested compiler revisions are recorded in
+[the CI compiler setup](.github/actions/setup-v/action.yml).
+On Windows, use `v run setup.vsh` with the same options; the direct executable
+script commands below apply to Linux and macOS.
+
+The guided runner lets you choose an example, explains setup changes, builds it
+and opens it. It streams build progress and offers to run an existing desktop
+build or rebuild it on later visits. Widget gallery is the default choice.
+Missing tools are reported with next steps. System package installation requires
+confirmation in the guided flow.
+
+For automation, explicit options skip the menus and setup confirmation. System
+installers may still request administrator authorization:
+
+```sh
+./setup.vsh --install --example widget_gallery --run
+./setup.vsh --build-only --example implot_dashboard --run
+./setup.vsh --check --example widget_gallery
 ```
 
 Setup uses an isolated `build/modules` dependency directory and checks out the
@@ -35,17 +69,19 @@ ImGui commit recorded in `IMGUI_REVISION`. It does not discard changes in an
 existing dependency checkout. Set `VMODULES` to use a different module directory.
 The setup may install system prerequisites through the upstream setup script.
 
-On Linux/macOS, launch `build/glfw_vulkan`, `build/widget_gallery`, or
-`build/implot_dashboard` after setup. Windows setup reports its executable path.
-Use `--build-only` to compile using dependencies already prepared, or `--check`
-for read-only prerequisite diagnostics. Both accept `--example`.
+Explicit builds only launch when `--run` is supplied. Use `--build-only` to
+compile with prepared dependencies, or `--check` for read-only prerequisite
+diagnostics. Windows keeps each built example beside its runtime DLLs.
 
-For Android, set the SDK/NDK paths and ABI, then run
-`scripts/build_android.sh --build-only`. It builds a signed debug APK without
-installing it. See [Android instructions](examples/android_touch/README.md).
+Choose Android in the menu for SDK/NDK detection and connected-device selection.
+Install the Android development tools first; the runner can ask for their paths
+but does not download the SDK. It builds, installs and opens a debug APK after
+confirmation. The guided Android flow requires Bash and the toolchain described
+in [Android instructions](examples/android_touch/README.md). Those instructions
+also cover explicit builds without installing on a device.
 
-The pinned ImGui commit includes the external-example host options. Until its
-upstream PR is merged, use this revision rather than an older installed module.
+The pinned ImGui commit includes the external-example host options. Use this
+revision rather than an older installed module.
 
 The ImGui repository owns native-library setup and pins a tested revision of
 this example. On Ubuntu or Debian, the shortest supported path is:
@@ -106,7 +142,8 @@ the upstream native host. `examples/glfw_vulkan/` contains the shared desktop
 loop, native flags, and the default demo UI. ImPlot context/spec objects are
 created and destroyed through host lifecycle callbacks.
 
-iOS/Metal and the optional application/accessibility layer are planned additions.
-They are not yet examples in this repository.
+The release gallery and touch app integrate the application/accessibility layer.
+Raw API views retain ordinary ImGui widgets; they do not automatically expose
+screen-reader semantics. iOS/Metal remains an upstream source integration.
 
 ![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)

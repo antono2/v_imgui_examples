@@ -7,6 +7,14 @@ bridge, and FreeType font. It has its own package ID,
 Install a JDK, CMake/Ninja, V, Android SDK platform/build-tools 36, and NDK r27c.
 Android API 24 and a Vulkan-capable device are required. From the repository root:
 
+Run `./setup.vsh` and choose **Android touch and text** for guided SDK/NDK
+detection, device selection, building and installation. Enable USB debugging on
+the device and accept its authorization prompt. The runner asks before building
+and installing; it never uninstalls an existing app to resolve a signing conflict.
+If multiple NDKs or devices are available, it asks which one to use.
+
+For a build without prompts or device installation:
+
 ```sh
 export ANDROID_SDK_ROOT=/path/to/android-sdk
 export ANDROID_NDK_HOME="$ANDROID_SDK_ROOT/ndk/27.3.13750724"
@@ -37,3 +45,20 @@ point. Inline marked-text styling and candidate geometry remain upstream limits.
 
 Follow [the release checklist](../../docs/testing.md). APK creation and symbol
 checks do not establish correct behavior on a real keyboard or device.
+
+## Accessible build and release installation
+
+Release APKs use the application/accessibility layer in this same V UI. Set
+`VIMGUI_ANDROID_APPLICATION_UI=1` before running the build script to enable
+labelled native accessibility controls, high contrast and the touch-sized theme.
+This build uses the Android SDK/NDK and Java toolchain; the upstream
+script builds the native C++ accessibility bridge and Java node provider.
+The host retains ownership of the input bridge, lifecycle and safe area.
+
+End users only download and install an APK; follow
+[installation without a Play Store](../../docs/installing-releases.md).
+No development tools or additional application libraries are needed on the device.
+Run `scripts/test_android_accessibility.sh` against the accessible debug build on
+a connected device to exercise roles/actions, Unicode selection, full-field
+clipboard, text sizing, content swipe and resume. It keeps configured accessibility
+services enabled. Human screen-reader navigation remains part of release testing.

@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: a28bfc544a46fd80221bdfe0aa45e161df9782d0
+          ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -60,13 +60,14 @@ jobs:
           make local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
       - name: Install native dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl
       - name: Build native ImGui library
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
       - name: Compile GLFW/Vulkan example
         run: |
           v -check-syntax source/demo/setup.vsh
+          ./source/demo/setup.vsh --help
           for example in glfw_vulkan widget_gallery implot_dashboard; do
             source=source/demo
             if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi
@@ -74,6 +75,8 @@ jobs:
           done
       - name: Render desktop examples with Vulkan validation
         run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
+      - name: Check desktop keyboard shortcuts
+        run: ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
       - name: Verify executable
         run: test -x "$RUNNER_TEMP/glfw_vulkan" && test -x "$RUNNER_TEMP/widget_gallery" && test -x "$RUNNER_TEMP/implot_dashboard"
 
@@ -89,7 +92,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: a28bfc544a46fd80221bdfe0aa45e161df9782d0
+          ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -127,7 +130,7 @@ jobs:
           "$env:GITHUB_WORKSPACE\toolchain\v" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Install Vulkan SDK and SwiftShader test artifacts
         shell: bash
-        run: bash source/modules/antono2/imgui/.github/scripts/setup-vulkan-ci.sh 1.4.309.0 v1.2
+        run: v run source/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh 1.4.309.0 v1.2
       - name: Install matching Volk header
         shell: pwsh
         run: |
@@ -201,7 +204,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: a28bfc544a46fd80221bdfe0aa45e161df9782d0
+          ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

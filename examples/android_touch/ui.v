@@ -26,6 +26,9 @@ fn edit_text(mut data imgui.InputTextCallbackData) i32 {
 // It calls this export between NewFrame and Render on its rendering thread.
 @[export: 'vimgui_android_demo_draw_ui']
 fn draw_ui(zoom &f32, taps &int, text &char, text_capacity int, clipboard &char, clipboard_capacity int, width f32, height f32) bool {
+	$if release_accessibility ? {
+		return draw_accessible_touch(zoom, taps, text, text_capacity, clipboard, clipboard_capacity)
+	}
 	imgui.set_next_window_pos(imgui.get_main_viewport().WorkPos, imgui.Cond(imgui.Cond_.always), imgui.ImVec2_c{})
 	imgui.set_next_window_size(imgui.ImVec2_c{ x: width, y: height }, imgui.Cond(imgui.Cond_.always))
 	flags := imgui.WindowFlags(int(imgui.WindowFlags_.no_move) | int(imgui.WindowFlags_.no_resize) | int(imgui.WindowFlags_.no_collapse))

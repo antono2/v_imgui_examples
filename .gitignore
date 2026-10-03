@@ -26,9 +26,12 @@ bin/
 imgui.ini
 main.cpp
 run.sh
+!packaging/run.sh
 tmp.txt
 .editorconfig
 
 # Reproducible dependency checkouts and build artifacts
 build/
 *.apk
+
+__pycache__/

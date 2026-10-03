@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.antono2.vimgui.examples.touch">
+    package="io.antono2.vimgui.examples.touch"
+    android:versionCode="1" android:versionName="1.0.0">
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="28" />
     <uses-feature android:name="android.hardware.vulkan.version"
         android:version="0x00400000" android:required="true" />

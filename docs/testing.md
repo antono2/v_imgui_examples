@@ -30,6 +30,14 @@ scripts/smoke_desktop.sh "$PWD/build"
 - [x] Change plot amplitude/frequency and series visibility, including legend clicks.
 - [x] Pan/zoom waveforms; pause/resume/reset history and observe a full wrap.
 - [x] Close each application normally.
+- [x] Escape quits each desktop example; active text editing and popups consume it first.
+- [x] F11 toggles borderless fullscreen, preserves normal/maximized restore bounds, and does not repeat while held.
+
+Run `./tests/desktop/shortcuts.sh binary-dir --raw-gallery` for keyboard checks
+of source builds, or omit `--raw-gallery` for accessible release builds. The
+check uses its own Xvfb display with Openbox, xdotool, xprop and wmctrl.
+It also checks that the display mode is unchanged and enables Vulkan validation
+while toggling fullscreen. These keyboard checks were verified locally on Linux.
 
 ## Android interaction
 
@@ -56,3 +64,30 @@ adb logcat -s vimgui-android-demo:I AndroidRuntime:E
 
 Release only after reviewing CI results and recording the interactive results.
 No physical-device or assistive-technology coverage is implied by compilation.
+
+## Integrated accessibility release checks
+
+The portable workflow renders each Linux bundle after copying its dependencies
+and exercises the gallery through the real AT-SPI bus, including native roles,
+button actions, status, high contrast, 200% text, off-screen list focus/selection
+and view switching. Windows bundles are checked for missing imported runtime
+DLLs. The Windows workflow also opens the packaged gallery in a runner's user
+session and checks UI Automation actions, text/selection, list selection and
+exact scroll percentages. Narrator speech still needs manual validation.
+Unicode selected-text reads use the native `IUIAutomation` client API. The
+legacy .NET selected-range wrapper also crashes against Windows' built-in
+RichEdit on this runner; the comparison and reproduction instructions are in
+[upstream's text checks](https://github.com/antono2/imgui/blob/master/tests/accessibility/README.md).
+
+On the connected Android tablet, the integrated accessibility build passed native
+roles/actions, checkbox state, progress ranges, Unicode text and UTF-16 selection,
+full-field clipboard copy/read and feedback, zoom, scrolling from static text,
+and resume state. Repeat with the final release APK and test portrait/landscape,
+visible system navigation bars and IME. Check TalkBack spoken navigation manually;
+provider action tests do not establish the quality of spoken announcements.
+
+To run instrumentation against a signed release APK, set
+`VIMGUI_ANDROID_TEST_APK`, `VIMGUI_ANDROID_TEST_KEYSTORE` and
+`VIMGUI_ANDROID_TEST_PASSWORD_FILE` before running
+`scripts/test_android_accessibility.sh`. A debug installation with a different
+certificate must be removed first; uninstalling it removes its saved demo data.
