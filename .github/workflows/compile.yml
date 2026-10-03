@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 26c8b67748675255885f2c79e609369c76283305
+          ref: a28bfc544a46fd80221bdfe0aa45e161df9782d0
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -60,16 +60,22 @@ jobs:
           make local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
       - name: Install native dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb
       - name: Build native ImGui library
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
       - name: Compile GLFW/Vulkan example
         run: |
           v -check-syntax source/demo/setup.vsh
-          v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/v_imgui_demo" source/demo
+          for example in glfw_vulkan widget_gallery implot_dashboard; do
+            source=source/demo
+            if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi
+            v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/$example" "$source"
+          done
+      - name: Render desktop examples with Vulkan validation
+        run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
       - name: Verify executable
-        run: test -x "$RUNNER_TEMP/v_imgui_demo"
+        run: test -x "$RUNNER_TEMP/glfw_vulkan" && test -x "$RUNNER_TEMP/widget_gallery" && test -x "$RUNNER_TEMP/implot_dashboard"
 
   windows2022:
     runs-on: windows-2022
@@ -83,7 +89,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 26c8b67748675255885f2c79e609369c76283305
+          ref: a28bfc544a46fd80221bdfe0aa45e161df9782d0
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -159,11 +165,25 @@ jobs:
           $env:GLFW_LIB = $LinkDirectory
           $Executable = Join-Path $env:RUNNER_TEMP 'v_imgui_demo.exe'
           $ModulePath = "$env:GITHUB_WORKSPACE\source\modules\antono2|@vlib|@vmodules"
-          v -no-memory-limit -path $ModulePath -cc msvc -o $Executable source/demo
-          if ($LASTEXITCODE -ne 0) { throw 'The Windows example did not compile' }
+          $Output = Join-Path $env:RUNNER_TEMP 'examples'
+          New-Item -ItemType Directory -Force $Output | Out-Null
+          foreach ($Example in @('glfw_vulkan', 'widget_gallery', 'implot_dashboard')) {
+            $Source = if ($Example -eq 'glfw_vulkan') { 'source/demo' } else { "source/demo/examples/$Example" }
+            $Executable = Join-Path $Output "$Example.exe"
+            v -no-memory-limit -path $ModulePath -cc msvc -o $Executable $Source
+            if ($LASTEXITCODE -ne 0) { throw "The Windows $Example did not compile" }
+          }
+          Copy-Item $GlfwDll.FullName, $VimguiDll.FullName $Output -Force
           foreach ($Artifact in @($Executable, $GlfwDll.FullName, $VimguiDll.FullName)) {
             if (-not (Test-Path $Artifact)) { throw "Missing Windows artifact: $Artifact" }
           }
+
+      - name: Upload Windows examples
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-examples
+          path: ${{ runner.temp }}/examples
+          if-no-files-found: error
 
   strict-v3-frontend:
     name: Required pinned V3 frontend
@@ -181,7 +201,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: 26c8b67748675255885f2c79e609369c76283305
+          ref: a28bfc544a46fd80221bdfe0aa45e161df9782d0
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -214,7 +234,10 @@ jobs:
           make -C toolchain/v local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
       - name: Check demo with V3
-        run: v -new-compiler -check -path "$VMODULES/antono2|@vlib|@vmodules" source/demo
+        run: |
+          for source in source/demo source/demo/examples/widget_gallery source/demo/examples/implot_dashboard; do
+            v -new-compiler -check -path "$VMODULES/antono2|@vlib|@vmodules" "$source"
+          done
 
   linux-v-master:
     name: Advisory current V master and dependency masters
@@ -279,16 +302,12 @@ jobs:
           cd source/modules/antono2/imgui
           v run build_vimgui.vsh --linkage shared --glfw system
           cd "$GITHUB_WORKSPACE"
-          v -new-compiler -no-memory-limit -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc -o "$RUNNER_TEMP/v_imgui_demo" source/demo
-          lavapipe_manifests=(/usr/share/vulkan/icd.d/lvp_icd*.json)
-          test -f "${lavapipe_manifests[0]}"
-          export VK_DRIVER_FILES="${lavapipe_manifests[0]}"
-          export VK_ICD_FILENAMES="$VK_DRIVER_FILES"
-          smoke_status=0
-          VIMGUI_SMOKE_FRAMES=60 VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout 30s xvfb-run -a "$RUNNER_TEMP/v_imgui_demo" > "$RUNNER_TEMP/v3-demo.log" 2>&1 || smoke_status=$?
-          cat "$RUNNER_TEMP/v3-demo.log"
-          test "$smoke_status" -eq 0
-          if grep -Eiq 'VUID-|validation error|segmentation|assert|fatal' "$RUNNER_TEMP/v3-demo.log"; then exit 1; fi
+          for example in glfw_vulkan widget_gallery implot_dashboard; do
+            source=source/demo
+            if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi
+            v -new-compiler -no-memory-limit -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc -o "$RUNNER_TEMP/$example" "$source"
+          done
+          bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
 
   required-checks:
     if: always()

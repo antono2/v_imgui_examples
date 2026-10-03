@@ -1,12 +1,23 @@
 
-# Shows how to use V Dear ImGui
+# Dear ImGui and ImPlot examples in V
 
 [Project portfolio](https://oreskin.de/projects_en.php)
 
-This repository contains the GLFW/Vulkan example used to validate the
-[`antono2/imgui`](https://github.com/antono2/imgui) V bindings.
-The required CI builds use `antono2.vulkan@v3.2.0`, GLFW `v2.0.0`, and fixed ImGui
-and V compiler revisions. An advisory job checks their moving master branches.
+Small runnable examples for the [`antono2/imgui`](https://github.com/antono2/imgui)
+V bindings. Desktop examples share a GLFW/Vulkan host; the Android example
+reuses upstream's native Vulkan/Activity host and constructs its UI in V.
+
+| Example | Demonstrates | Target |
+| --- | --- | --- |
+| [GLFW/Vulkan](examples/glfw_vulkan/README.md) | Backend initialization, floating windows, docking | Desktop |
+| [Widget gallery](examples/widget_gallery/README.md) | Text buffers, controls, combos, tables, popups | Desktop |
+| [ImPlot dashboard](examples/implot_dashboard/README.md) | Lines, scatter plots, series selection, rolling history | Desktop |
+| [Touch and text](examples/android_touch/README.md) | Touch controls, IME selection, clipboard, scaling | Android |
+
+CI pins ImGui, GLFW, Vulkan, and V revisions. Linux renders all desktop examples
+with Vulkan validation in both standard and docking variants; Windows compiles
+all desktop examples. Android CI builds debug APKs for three ABIs. Device testing
+is required before release; see [the testing checklist](docs/testing.md).
 
 ## Recommended quick start
 
@@ -15,9 +26,26 @@ the example without opening a window:
 
 ```sh
 v run setup.vsh
+v run setup.vsh --example widget_gallery
+v run setup.vsh --example implot_dashboard
 ```
 
-Use `v run setup.vsh --check` for read-only prerequisite diagnostics.
+Setup uses an isolated `build/modules` dependency directory and checks out the
+ImGui commit recorded in `IMGUI_REVISION`. It does not discard changes in an
+existing dependency checkout. Set `VMODULES` to use a different module directory.
+The setup may install system prerequisites through the upstream setup script.
+
+On Linux/macOS, launch `build/glfw_vulkan`, `build/widget_gallery`, or
+`build/implot_dashboard` after setup. Windows setup reports its executable path.
+Use `--build-only` to compile using dependencies already prepared, or `--check`
+for read-only prerequisite diagnostics. Both accept `--example`.
+
+For Android, set the SDK/NDK paths and ABI, then run
+`scripts/build_android.sh --build-only`. It builds a signed debug APK without
+installing it. See [Android instructions](examples/android_touch/README.md).
+
+The pinned ImGui commit includes the external-example host options. Until its
+upstream PR is merged, use this revision rather than an older installed module.
 
 The ImGui repository owns native-library setup and pins a tested revision of
 this example. On Ubuntu or Debian, the shortest supported path is:
@@ -72,7 +100,13 @@ floating windows and reports that docking is unavailable.
 
 ## Layout
 
-`main.v` selects the example. The GLFW/Vulkan implementation and its native
-compiler flags are under `examples/glfw_vulkan/`.
+The root `main.v` retains the GLFW/Vulkan demo as the default. Each new desktop
+example has its own `main.v`; the Android UI exports the callback consumed by
+the upstream native host. `examples/glfw_vulkan/` contains the shared desktop
+loop, native flags, and the default demo UI. ImPlot context/spec objects are
+created and destroyed through host lifecycle callbacks.
+
+iOS/Metal and the optional application/accessibility layer are planned additions.
+They are not yet examples in this repository.
 
 ![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)

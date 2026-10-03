@@ -1,0 +1,24 @@
+name: Pinned V compiler
+description: Build the V compiler and compatibility compiler used by the examples
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        repository: vlang/v
+        ref: 1f128c94619fb6e4863c5f81883e1b860405c8fa
+        path: toolchain/v
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        repository: vlang/vc
+        ref: 4a1ba4d772f19c2752c9850d3b5421c71f54a4d6
+        path: toolchain/v/vc
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        repository: vlang/tccbin
+        ref: d6e7ac1b1bcc98aed734a6ecbfa8509f24606c74
+        path: toolchain/v/thirdparty/tcc
+    - shell: bash
+      run: |
+        make -C toolchain/v local=1
+        echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"

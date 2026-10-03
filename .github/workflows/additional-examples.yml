@@ -1,0 +1,112 @@
+name: Additional examples
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  standard-desktop:
+    name: Desktop examples / standard ImGui
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      VMODULES: ${{ github.workspace }}/build/modules
+      VULKAN_SDK: /usr
+      GLFW_INCLUDE: /usr/include
+      GLFW_LIB: /usr/lib/x86_64-linux-gnu
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/setup-v
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: antono2/imgui
+          ref: 658d1fa0e863c3d0345ffdd9685fee05876a7648
+          path: build/modules/antono2/imgui
+          submodules: recursive
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: antono2/vulkan
+          ref: v3.2.0
+          path: build/modules/antono2/vulkan
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: antono2/glfw
+          ref: v2.0.0
+          path: build/modules/antono2/glfw
+      - name: Install graphics dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb
+      - name: Build native library
+        working-directory: build/modules/antono2/imgui
+        run: v run build_vimgui.vsh --linkage shared --glfw system
+      - name: Compile and render examples
+        run: |
+          for example in glfw_vulkan widget_gallery implot_dashboard; do
+            source=.
+            if [ "$example" != glfw_vulkan ]; then source="examples/$example"; fi
+            v -no-memory-limit -cc gcc -o "build/$example" "$source"
+          done
+          bash scripts/smoke_desktop.sh "$GITHUB_WORKSPACE/build"
+      - name: Upload rendering logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: standard-desktop-logs
+          path: build/smoke-logs
+
+  android:
+    name: Android touch / ${{ matrix.abi }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a, x86_64]
+    env:
+      ANDROID_ABI: ${{ matrix.abi }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/setup-v
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android toolchain
+        run: |
+          sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
+      - name: Package external V UI with upstream host
+        run: bash scripts/build_android.sh --build-only
+      - name: Verify package and exported UI
+        run: |
+          apk="build/android-touch-$ANDROID_ABI/vimgui-demo-$ANDROID_ABI.apk"
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt" dump badging "$apk" | tee build/apk-badging.txt
+          grep -q "package: name='io.antono2.vimgui.examples.touch'" build/apk-badging.txt
+          "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm" -D "build/android-touch-$ANDROID_ABI/libvimgui_android_ui.so" | grep vimgui_android_demo_draw_ui
+      - name: Upload test APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: android-touch-${{ matrix.abi }}
+          path: build/android-touch-${{ matrix.abi }}/vimgui-demo-${{ matrix.abi }}.apk
+          if-no-files-found: error
+
+  examples-required-checks:
+    if: always()
+    needs: [standard-desktop, android]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify examples
+        env:
+          DESKTOP_RESULT: ${{ needs.standard-desktop.result }}
+          ANDROID_RESULT: ${{ needs.android.result }}
+        run: |
+          test "$DESKTOP_RESULT" = success
+          test "$ANDROID_RESULT" = success
