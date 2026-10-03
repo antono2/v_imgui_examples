@@ -46,6 +46,8 @@ start_app() {
     if command -v gdb >/dev/null; then
       timeout 10s gdb -batch -ex 'set pagination off' -ex 'thread apply all bt' -p "$app_pid" > "$log_dir/$current_example-startup-stack.log" 2>&1 || true
       cat "$log_dir/$current_example-startup-stack.log" >&2
+      timeout 10s gdb -batch -ex 'set pagination off' -ex 'thread apply all bt' -p "$wm_pid" > "$log_dir/window-manager-stack.log" 2>&1 || true
+      cat "$log_dir/window-manager-stack.log" >&2
     fi
     exit 1
   fi

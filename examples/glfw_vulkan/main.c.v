@@ -47,6 +47,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 	// Create window with Vulkan context
 	glfw.window_hint(glfw.client_api, glfw.no_api)
+	// Map the window after its renderer and UI are ready.
+	glfw.window_hint(glfw.visible, 0)
 	// Borderless fullscreen should remain available when switching applications.
 	glfw.window_hint(glfw.auto_iconify, 0)
 
@@ -120,6 +122,10 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	impl_vulkan.vkinit(&init_info)
 
 	options.initialize(state)
+	// Drain startup events before GLFW's X11 visibility wait. Queued unrelated
+	// events can prevent that wait from reaching its timeout during creation.
+	glfw.poll_events()
+	glfw.show_window(window)
 
 	// No custom fonts are loaded, so Dear ImGui uses its default font.
 
