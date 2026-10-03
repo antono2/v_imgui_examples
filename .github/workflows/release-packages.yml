@@ -75,6 +75,8 @@ jobs:
           . scripts/setup_windows_build.ps1
           v -prod run scripts/build_release.v '${{ matrix.variant }}'
           if ($LASTEXITCODE -ne 0) { throw 'Portable release build failed' }
+          & "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/examples.exe" --help
+          if ($LASTEXITCODE -ne 0) { throw 'Examples launcher failed' }
       - name: Exercise native Windows UI Automation
         if: runner.os == 'Windows'
         shell: pwsh

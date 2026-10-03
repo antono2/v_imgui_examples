@@ -1,6 +1,10 @@
 V ImGui examples — Windows 10/11, x64
 
 Extract the whole archive and open:
+  examples.exe
+
+Choose an example from the menu. Press Enter for Widget gallery.
+You can also open an example directly:
   widget_gallery.exe
   implot_dashboard.exe
   glfw_vulkan.exe

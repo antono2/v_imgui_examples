@@ -61,15 +61,17 @@ fn package_linux(root string, binaries string, imgui string, output string) ![]s
 	library_dir := os.join_path(output, 'lib')
 	os.mkdir_all(library_dir)!
 	mut queue := []Library{}
-	for example in examples {
+	mut programs := examples.clone()
+	programs << 'examples'
+	for example in programs {
 		source := os.join_path(binaries, example)
 		copy(source, os.join_path(output, example))!
 		os.chmod(os.join_path(output, example), 0o755)!
 		queue << linux_dependencies(source)!
 	}
 	// GLFW loads extension libraries and Vulkan presentation with dlopen.
-	for name in ['libvulkan.so.1', 'libXrandr.so.2', 'libXinerama.so.1', 'libXcursor.so.1',
-		'libXi.so.6', 'libXxf86vm.so.1'] {
+	for name in ['libvulkan.so.1', 'libXrandr.so.2', 'libXinerama.so.1', 'libXcursor.so.1', 'libXi.so.6',
+		'libXxf86vm.so.1'] {
 		queue << Library{ name: name, path: os.join_path('/usr/lib/x86_64-linux-gnu', name) }
 	}
 	mut digests := map[string]string{}
@@ -94,7 +96,7 @@ fn package_linux(root string, binaries string, imgui string, output string) ![]s
 	os.chmod(os.join_path(output, 'run.sh'), 0o755)!
 	copy(os.join_path(root, 'packaging', 'README-linux.txt'), os.join_path(output, 'README.txt'))!
 	mut audit_files := []string{}
-	for example in examples {
+	for example in programs {
 		file := os.join_path(output, example)
 		command('patchelf', ['--set-rpath', r'$ORIGIN/lib', file])!
 		audit_files << file
@@ -150,6 +152,7 @@ fn windows_os_library(name string) bool {
 		'netapi32.dll',
 		'mswsock.dll',
 		'normaliz.dll',
+		'dbghelp.dll',
 		'd3d11.dll',
 		'dxgi.dll',
 		'opengl32.dll',
@@ -229,6 +232,15 @@ pub fn package_release(root string, binaries string, imgui string, destination s
 	}
 	os.mkdir_all(os.join_path(destination, 'licenses'))!
 	output := os.real_path(destination)
+	mut launcher := os.join_path(binaries, 'examples')
+	$if windows {
+		launcher += '.exe'
+	}
+	command(@VEXE, ['-prod', '-o', launcher, os.join_path(root, 'packaging', 'examples.v')])!
+	copy(launcher, os.join_path(output, os.file_name(launcher)))!
+	$if !windows {
+		os.chmod(os.join_path(output, 'examples'), 0o755)!
+	}
 	mut runtime := []string{}
 	$if windows {
 		runtime = package_windows(root, binaries, imgui, output)!

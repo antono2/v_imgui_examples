@@ -1,6 +1,10 @@
 V ImGui examples — Ubuntu 24.04 or newer, x86_64
 
 Extract the whole archive. From its directory, run:
+  ./run.sh
+
+Choose an example from the menu. Press Enter for Widget gallery.
+To launch directly:
   ./run.sh widget_gallery
   ./run.sh implot_dashboard
   ./run.sh glfw_vulkan

@@ -9,16 +9,18 @@ is required.
 
 ## Desktop
 
-Choose a ZIP for your OS and **x64** processor:
+Choose a ZIP for your OS and **x64** processor. **Docking** is the recommended download:
 
 - **Windows:** Windows 10 or 11. Extract the entire ZIP to a writable folder.
-  Open `widget_gallery.exe`, `implot_dashboard.exe`, or `glfw_vulkan.exe`.
+  Open `examples.exe`, then choose an example from its menu. Press Enter for the
+  Widget gallery. You can also open each example executable directly.
   Keep the DLLs beside the executables.
 - **Linux:** Ubuntu 24.04 or a compatible newer distribution, with an X11 or
   XWayland desktop. Extract the entire ZIP. Run `./run.sh`, or
-  `./run.sh implot_dashboard` / `./run.sh glfw_vulkan` from the extracted folder.
+  choose an example from its menu (Enter opens Widget gallery), or run
+  `./run.sh implot_dashboard` / `./run.sh glfw_vulkan` directly.
   Keep the `lib` directory beside the executables. If your archive tool drops
-  executable permissions, run `chmod +x run.sh glfw_vulkan widget_gallery implot_dashboard`.
+  executable permissions, run `chmod +x run.sh examples glfw_vulkan widget_gallery implot_dashboard`.
 
 **Docking** includes ImGui docking and optional platform viewports.
 **Standard** uses independent ImGui windows. Both contain all three examples.
