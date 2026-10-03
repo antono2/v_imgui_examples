@@ -37,15 +37,15 @@ Record the APK revision, ABI, device/Android version, keyboard app, and language
 Install the matching debug APK; its launcher label is **V ImGui Touch Examples**.
 
 - [x] Tap the counter repeatedly and check the progress indicator.
-- [ ] Enter ASCII and non-ASCII text; select and replace part of it with the native keyboard.
-- [ ] Move the cursor with touch and hardware keys, where available.
-- [ ] Hide the keyboard with Back, then tap the active field to reopen it.
-- [ ] Copy/read clipboard text, including non-ASCII text; clear the preview.
-- [ ] Rotate while editing; confirm text, count, and zoom survive window recreation.
-- [ ] Background/resume the app and repeat an edit.
-- [ ] Change zoom, use portrait/landscape, and reach the bottom controls by scrolling.
-- [ ] Relaunch after process termination; confirm the sample starts with fresh state.
-- [ ] Check logcat for crashes, Vulkan errors, or failed input initialization.
+- [x] Enter ASCII and non-ASCII text; select and replace part of it with the native keyboard.
+- [x] Move the cursor with touch and hardware keys, where available.
+- [x] Hide the keyboard with Back, then tap the active field to reopen it.
+- [x] Copy/read clipboard text, including non-ASCII text; clear the preview.
+- [x] Rotate while editing; confirm text, count, and zoom survive window recreation.
+- [x] Background/resume the app and repeat an edit.
+- [x] Change zoom, use portrait/landscape, and reach the bottom controls by scrolling.
+- [x] Relaunch after process termination; confirm the sample starts with fresh state.
+- [x] Check logcat for crashes, Vulkan errors, or failed input initialization.
 
 ```sh
 adb logcat -s vimgui-android-demo:I AndroidRuntime:E
