@@ -104,7 +104,7 @@ def main():
             if source.parent != lib:
                 raise RuntimeError(f'{path.name} depends on an unbundled library: {name} => {source}')
     archive = package.with_suffix('.zip')
-    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as out:
+    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9, strict_timestamps=False) as out:
         for path in sorted(package.rglob('*')):
             if path.is_file():
                 out.write(path, path.relative_to(package.parent))
