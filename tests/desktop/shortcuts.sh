@@ -41,6 +41,12 @@ start_app() {
     echo "No visible window appeared for $current_example within 30 seconds" >&2
     cat "$log_dir/$current_example.log" >&2
     cat "$log_dir/window-manager.log" >&2
+    xwininfo -root -tree >&2 || true
+    ps -o pid,stat,wchan:24,comm -p "$app_pid" >&2 || true
+    if command -v gdb >/dev/null; then
+      timeout 10s gdb -batch -ex 'set pagination off' -ex 'thread apply all bt' -p "$app_pid" > "$log_dir/$current_example-startup-stack.log" 2>&1 || true
+      cat "$log_dir/$current_example-startup-stack.log" >&2
+    fi
     exit 1
   fi
   if ! timeout 10s xdotool windowactivate --sync "$window"; then
