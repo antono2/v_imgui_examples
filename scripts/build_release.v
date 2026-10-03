@@ -1,3 +1,5 @@
+#!/usr/bin/env -S v -prod run
+
 module main
 
 import os
@@ -23,7 +25,7 @@ fn main() {
 
 fn run() ! {
 	if os.args.len != 2 || os.args[1] !in ['docking', 'standard'] {
-		return error('Usage: v run scripts/build_release.v docking|standard')
+		return error('Usage: ./scripts/build_release.v docking|standard')
 	}
 	variant := os.args[1]
 	root := os.dir(os.dir(@FILE))

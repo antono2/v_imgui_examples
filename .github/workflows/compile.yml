@@ -67,6 +67,7 @@ jobs:
       - name: Compile GLFW/Vulkan example
         run: |
           v -check-syntax source/demo/setup.vsh
+          ./source/demo/setup.vsh --help
           for example in glfw_vulkan widget_gallery implot_dashboard; do
             source=source/demo
             if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi

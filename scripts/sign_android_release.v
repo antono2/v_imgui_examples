@@ -1,3 +1,5 @@
+#!/usr/bin/env -S v -prod run
+
 // Combine trusted unsigned CI APKs and sign with the private release identity.
 module main
 

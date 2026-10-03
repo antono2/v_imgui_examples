@@ -37,11 +37,13 @@ want the Standard variant.
 Install V and Git, then run this command from the checkout:
 
 ```sh
-v run setup.vsh
+./setup.vsh
 ```
 
 Use the official V compiler. The tested compiler revisions are recorded in
 [the CI compiler setup](.github/actions/setup-v/action.yml).
+On Windows, use `v run setup.vsh` with the same options; the direct executable
+script commands below apply to Linux and macOS.
 
 The guided runner lets you choose an example, explains setup changes, builds it
 and opens it. It streams build progress and offers to run an existing desktop
@@ -53,9 +55,9 @@ For automation, explicit options skip the menus and setup confirmation. System
 installers may still request administrator authorization:
 
 ```sh
-v run setup.vsh --install --example widget_gallery --run
-v run setup.vsh --build-only --example implot_dashboard --run
-v run setup.vsh --check --example widget_gallery
+./setup.vsh --install --example widget_gallery --run
+./setup.vsh --build-only --example implot_dashboard --run
+./setup.vsh --check --example widget_gallery
 ```
 
 Setup uses an isolated `build/modules` dependency directory and checks out the

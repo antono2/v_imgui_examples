@@ -151,7 +151,7 @@ fn guided_main() ! {
 			index++
 			example = os.args[index]
 		} else if arg in ['-h', '--help'] {
-			println('Usage: v run setup.vsh [--install|--check|--build-only] [--run] [--example glfw_vulkan|widget_gallery|implot_dashboard|android_touch]\nNo arguments: guided setup, build and launch. Explicit flags skip menus; system installers may request administrator authorization. --check makes no changes.')
+			println('Usage: ./setup.vsh [--install|--check|--build-only] [--run] [--example glfw_vulkan|widget_gallery|implot_dashboard|android_touch]\nOn Windows: v run setup.vsh with the same options.\nNo arguments: guided setup, build and launch. Explicit flags skip menus; system installers may request administrator authorization. --check makes no changes.')
 			return
 		} else {
 			eprintln('Unknown or incomplete option: ${arg}')

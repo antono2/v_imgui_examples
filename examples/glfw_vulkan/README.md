@@ -3,7 +3,7 @@
 From the repository root:
 
 ```sh
-v run setup.vsh
+./setup.vsh --example glfw_vulkan
 ```
 
 On Linux/macOS, launch `build/glfw_vulkan`. Windows setup reports its executable.

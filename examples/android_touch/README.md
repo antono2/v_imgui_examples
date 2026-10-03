@@ -7,7 +7,7 @@ bridge, and FreeType font. It has its own package ID,
 Install a JDK, CMake/Ninja, V, Android SDK platform/build-tools 36, and NDK r27c.
 Android API 24 and a Vulkan-capable device are required. From the repository root:
 
-Run `v run setup.vsh` and choose **Android touch and text** for guided SDK/NDK
+Run `./setup.vsh` and choose **Android touch and text** for guided SDK/NDK
 detection, device selection, building and installation. Enable USB debugging on
 the device and accept its authorization prompt. The runner asks before building
 and installing; it never uninstalls an existing app to resolve a signing conflict.

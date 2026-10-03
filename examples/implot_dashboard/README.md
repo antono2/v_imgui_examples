@@ -3,7 +3,7 @@
 From the repository root:
 
 ```sh
-v run setup.vsh --example implot_dashboard
+./setup.vsh --example implot_dashboard
 ```
 
 On Linux/macOS, launch `build/implot_dashboard`. Windows setup reports its executable.

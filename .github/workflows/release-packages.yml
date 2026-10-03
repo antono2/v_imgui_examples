@@ -14,9 +14,9 @@ jobs:
         variant: [docking, standard]
         include:
           - variant: docking
-            imgui-ref: 047f2d94dbde25fc314fb3e0ed8fd07243d6c7f6
+            imgui-ref: f13c1c8e6a79e81df9867155c589e5eeafa17b37
           - variant: standard
-            imgui-ref: 80fda7761bb3dd06b1ef5512297a5e51f74805d9
+            imgui-ref: d66ee51490378ab651f1f184cff9eff0949dc20a
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
@@ -62,7 +62,7 @@ jobs:
           Copy-Item build/volk/volk.h, build/volk/volk.c $Destination
       - name: Build, bundle and render Linux releases
         if: runner.os == 'Linux'
-        run: v -prod run scripts/build_release.v '${{ matrix.variant }}'
+        run: ./scripts/build_release.v '${{ matrix.variant }}'
       - name: Exercise bundled gallery through native AT-SPI
         if: runner.os == 'Linux'
         run: |
@@ -123,7 +123,7 @@ jobs:
       - name: Build accessible touch app
         run: bash scripts/build_android.sh --build-only
       - name: Collect Android notices
-        run: v run scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
+        run: ./scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
       - name: Upload unsigned APK and notices for release signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
