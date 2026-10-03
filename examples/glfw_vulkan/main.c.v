@@ -14,6 +14,12 @@ fn C.v_imgui_example_draw_data_is_minimized(draw_data &imgui.ImDrawData) bool
 
 fn C.v_imgui_example_smoke_frame_limit() int
 
+fn C.v_imgui_example_escape_reserved() bool
+
+fn C.v_imgui_example_escape_pressed() bool
+
+fn C.v_imgui_example_fullscreen_pressed() bool
+
 // Hosts own Vulkan and GLFW; examples supply a frame callback and persistent state.
 pub fn main() {
 	mut state := DemoState{}
@@ -118,6 +124,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	// Let CI exercise rendering and orderly cleanup without closing the window manually.
 	smoke_frame_limit := C.v_imgui_example_smoke_frame_limit()
 	mut rendered_frames := 0
+	mut window_mode := WindowMode{}
+	window_mode.remember_bounds(window)
 
 	// Main loop
 	for !glfw.window_should_close(window) {
@@ -127,6 +135,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		glfw.poll_events()
+		window_mode.remember_bounds(window)
+		escape_reserved := C.v_imgui_example_escape_reserved()
 
 		// Resize swap chain?
 		framebuffer := glfw.framebuffer_size(window)
@@ -152,6 +162,7 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		if app.docking_available && app.dockspace_enabled {
 			imgui.create_main_dockspace()
 		}
+		app.escape_handled = false
 		frame(mut app, state)
 
 		// Rendering
@@ -170,6 +181,13 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		imgui.render_platform_viewports()
 		if !is_minimized {
 			app.frame_present(mut wd)
+		}
+		if C.v_imgui_example_fullscreen_pressed() {
+			window_mode.toggle(window)
+		}
+		if C.v_imgui_example_escape_pressed() && !escape_reserved
+			&& !C.v_imgui_example_escape_reserved() && !app.escape_handled {
+			glfw.set_window_should_close(window, 1)
 		}
 		rendered_frames++
 		if smoke_frame_limit > 0 && rendered_frames >= smoke_frame_limit {
@@ -196,7 +214,9 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 pub struct App {
 pub mut:
-	native_window         voidptr
+	native_window voidptr
+	// Set during the frame callback when an example consumes Escape itself.
+	escape_handled        bool
 	allocator             &vk.AllocationCallbacks = unsafe { nil }
 	instance              vk.Instance
 	physical_device       vk.PhysicalDevice

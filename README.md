@@ -32,6 +32,10 @@ want the Standard variant.
 - **Linux:** extract the ZIP and run `./run.sh` for the example menu.
 - **Android:** install the universal APK and open **V ImGui Touch Examples**.
 
+In each desktop example, **Escape** quits when a control is not using it to
+cancel an edit, drag, popup or navigation operation. **F11** toggles borderless
+fullscreen on the window's monitor; pressing it again restores the window.
+
 ## Build from source
 
 Install V and Git, then run this command from the checkout:

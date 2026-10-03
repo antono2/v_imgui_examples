@@ -25,6 +25,8 @@ Choose a ZIP for your OS and **x64** processor. **Docking** is the recommended d
 **Docking** includes ImGui docking and optional platform viewports.
 **Standard** uses independent ImGui windows. Both contain all three examples.
 You can move the extracted folder; binaries use package-relative library paths.
+Press **F11** to toggle borderless fullscreen and restore the previous window
+position and size. **Escape** quits, after any active edit or popup consumes it.
 `licenses/` and `RUNTIME-LIBRARIES.txt` identify bundled components.
 
 ## Android: installation without a Play Store

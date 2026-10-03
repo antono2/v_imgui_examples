@@ -9,6 +9,9 @@ To launch directly:
   ./run.sh implot_dashboard
   ./run.sh glfw_vulkan
 
+In an example, Escape quits after active controls consume it to cancel an edit
+or popup. F11 toggles borderless fullscreen and restores the previous window.
+
 The examples, ImGui/ImPlot library, GLFW, Vulkan loader, C++ runtime, and
 non-system runtime dependencies are included. No V compiler, Vulkan SDK,
 or additional application libraries need to be installed.
