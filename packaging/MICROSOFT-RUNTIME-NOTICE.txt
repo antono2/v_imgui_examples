@@ -1,0 +1,7 @@
+This package includes the Microsoft Visual C++ x64 Redistributable runtime
+DLLs deployed beside the applications from Visual Studio's Redist directory.
+Copyright Microsoft Corporation. All rights reserved.
+Redistribution is governed by the Microsoft Visual Studio license and its
+redistributable code list:
+https://visualstudio.microsoft.com/license-terms/
+https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution

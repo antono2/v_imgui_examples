@@ -37,3 +37,20 @@ point. Inline marked-text styling and candidate geometry remain upstream limits.
 
 Follow [the release checklist](../../docs/testing.md). APK creation and symbol
 checks do not establish correct behavior on a real keyboard or device.
+
+## Accessible build and release installation
+
+Release APKs use the application/accessibility layer in this same V UI. Set
+`VIMGUI_ANDROID_APPLICATION_UI=1` before running the build script to enable
+labelled native accessibility controls, high contrast and the touch-sized theme.
+This build also needs Rust and the selected Android Rust target; the upstream
+script prepares the pinned AccessKit sources and builds its native adapter.
+The host retains ownership of the input bridge, lifecycle and safe area.
+
+End users only download and install an APK; follow
+[installation without a Play Store](../../docs/installing-releases.md).
+No development tools or additional application libraries are needed on the device.
+Run `scripts/test_android_accessibility.sh` against the accessible debug build on
+a connected device to exercise roles/actions, Unicode selection, full-field
+clipboard, text sizing, content swipe and resume. It keeps configured accessibility
+services enabled. Human screen-reader navigation remains part of release testing.

@@ -56,3 +56,18 @@ adb logcat -s vimgui-android-demo:I AndroidRuntime:E
 
 Release only after reviewing CI results and recording the interactive results.
 No physical-device or assistive-technology coverage is implied by compilation.
+
+## Integrated accessibility release checks
+
+The portable workflow renders each Linux bundle after copying its dependencies
+and exercises the gallery through the real AT-SPI bus, including native roles,
+button actions, status, high contrast, 200% text, off-screen list focus/selection
+and view switching. Windows bundles are checked for missing imported runtime
+DLLs. Graphical Windows/UI Automation behavior still needs a Windows user session.
+
+On the connected Android tablet, the integrated accessibility build passed native
+roles/actions, checkbox state, progress ranges, Unicode text and UTF-16 selection,
+full-field clipboard copy/read and feedback, zoom, scrolling from static text,
+and resume state. Repeat with the final release APK and test portrait/landscape,
+visible system navigation bars and IME. Check TalkBack spoken navigation manually;
+provider action tests do not establish the quality of spoken announcements.

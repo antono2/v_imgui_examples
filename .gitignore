@@ -32,3 +32,5 @@ tmp.txt
 # Reproducible dependency checkouts and build artifacts
 build/
 *.apk
+
+__pycache__/

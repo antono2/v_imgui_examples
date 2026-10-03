@@ -19,7 +19,15 @@ with Vulkan validation in both standard and docking variants; Windows compiles
 all desktop examples. Android CI builds debug APKs for three ABIs. Device testing
 is required before release; see [the testing checklist](docs/testing.md).
 
-## Recommended quick start
+## Run a release download
+
+[Download a release](https://github.com/antono2/v_imgui_examples/releases) and follow
+[installation instructions](docs/installing-releases.md). Desktop ZIPs bundle
+their application runtime libraries; Android APKs include their native libraries
+and font. The gallery and Android app include labelled native accessibility
+controls, high contrast and text sizing.
+
+## Build from source
 
 From this checkout, the cross-platform setup installs/builds ImGui and compiles
 the example without opening a window:
@@ -44,8 +52,8 @@ For Android, set the SDK/NDK paths and ABI, then run
 `scripts/build_android.sh --build-only`. It builds a signed debug APK without
 installing it. See [Android instructions](examples/android_touch/README.md).
 
-The pinned ImGui commit includes the external-example host options. Until its
-upstream PR is merged, use this revision rather than an older installed module.
+The pinned ImGui commit includes the external-example host options. Use this
+revision rather than an older installed module.
 
 The ImGui repository owns native-library setup and pins a tested revision of
 this example. On Ubuntu or Debian, the shortest supported path is:
@@ -106,7 +114,8 @@ the upstream native host. `examples/glfw_vulkan/` contains the shared desktop
 loop, native flags, and the default demo UI. ImPlot context/spec objects are
 created and destroyed through host lifecycle callbacks.
 
-iOS/Metal and the optional application/accessibility layer are planned additions.
-They are not yet examples in this repository.
+The release gallery and touch app integrate the application/accessibility layer.
+Raw API views retain ordinary ImGui widgets; they do not automatically expose
+screen-reader semantics. iOS/Metal remains an upstream source integration.
 
 ![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)

@@ -19,7 +19,7 @@ if [[ "$(git -C "$imgui_dir" rev-parse HEAD)" != "$revision" ]]; then
   exit 2
 fi
 git -C "$imgui_dir" submodule update --init --recursive
-export VIMGUI_ANDROID_UI_SOURCE="$repo_dir/examples/android_touch/ui.v"
+export VIMGUI_ANDROID_UI_SOURCE="$repo_dir/examples/android_touch"
 export VIMGUI_ANDROID_MANIFEST="$repo_dir/examples/android_touch/AndroidManifest.xml"
 export VIMGUI_ANDROID_BUILD_DIR="${VIMGUI_ANDROID_BUILD_DIR:-$repo_dir/build/android-touch-${ANDROID_ABI:-device}}"
 exec bash "$imgui_dir/scripts/run_android_demo.sh" "$mode"

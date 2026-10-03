@@ -51,7 +51,7 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		panic('GLFW: Vulkan Not Supported')
 	}
 
-	mut app := App{}
+	mut app := App{ native_window: voidptr(window) }
 
 	mut extensions := []&char{}
 	mut extensions_count := u32(0)
@@ -196,6 +196,7 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 pub struct App {
 pub mut:
+	native_window         voidptr
 	allocator             &vk.AllocationCallbacks = unsafe { nil }
 	instance              vk.Instance
 	physical_device       vk.PhysicalDevice

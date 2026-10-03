@@ -1,0 +1,128 @@
+name: Portable release packages
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+        variant: [docking, standard]
+        include:
+          - variant: docking
+            imgui-ref: c093593eeb5685ab4c40b308b9773b51fec37ffe
+          - variant: standard
+            imgui-ref: 253cb56d86ab6bb79283980d57ea42e64f091734
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      VMODULES: ${{ github.workspace }}/build/modules
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-v
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: antono2/imgui
+          ref: ${{ matrix.imgui-ref }}
+          path: build/modules/antono2/imgui
+          submodules: recursive
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: antono2/vulkan
+          ref: v3.2.0
+          path: build/modules/antono2/vulkan
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: antono2/glfw
+          ref: v2.0.0
+          path: build/modules/antono2/glfw
+      - name: Install Linux build and rendering tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb patchelf python3-gi python3-dbus gir1.2-atspi-2.0 xdotool
+      - name: Install Windows Vulkan build tools
+        if: runner.os == 'Windows'
+        shell: bash
+        run: bash build/modules/antono2/imgui/.github/scripts/setup-vulkan-ci.sh 1.4.309.0 v1.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: runner.os == 'Windows'
+        with:
+          repository: zeux/volk
+          ref: 58689c063427f5bad4f133625049b1a3c5dd8287
+          path: build/volk
+      - name: Install Windows Volk header
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $Destination = Join-Path $env:VULKAN_SDK 'Include/volk'
+          New-Item -ItemType Directory -Force $Destination | Out-Null
+          Copy-Item build/volk/volk.h, build/volk/volk.c $Destination
+      - name: Build, bundle and render Linux releases
+        if: runner.os == 'Linux'
+        run: bash scripts/build_release_linux.sh '${{ matrix.variant }}'
+      - name: Exercise bundled gallery through native AT-SPI
+        if: runner.os == 'Linux'
+        run: dbus-run-session -- xvfb-run -a /usr/bin/python3 tests/desktop/accessibility.py "build/v-imgui-examples-linux-x64-${{ matrix.variant }}/widget_gallery" "build/release-atspi-${{ matrix.variant }}.log"
+      - name: Build and audit Windows release DLLs
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: scripts/build_release_windows.ps1 -Variant '${{ matrix.variant }}'
+      - name: Upload portable desktop package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-${{ runner.os }}-${{ matrix.variant }}
+          path: build/v-imgui-examples-*.zip
+          if-no-files-found: error
+      - name: Upload rendering logs
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: render-${{ matrix.variant }}
+          path: build/v-imgui-examples-linux-*/smoke-logs
+
+  android:
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a, x86_64]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      ANDROID_ABI: ${{ matrix.abi }}
+      VIMGUI_ANDROID_APPLICATION_UI: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-v
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android build tools
+        run: |
+          sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
+      - name: Build accessible touch app
+        run: bash scripts/build_android.sh --build-only
+      - name: Collect Android notices
+        run: |
+          case "$ANDROID_ABI" in
+            armeabi-v7a) target=armv7-linux-androideabi ;;
+            arm64-v8a) target=aarch64-linux-android ;;
+            x86_64) target=x86_64-linux-android ;;
+          esac
+          python3 scripts/collect_licenses.py build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" --target "$target"
+          cp packaging/ROBOTO-LICENSE.txt "build/android-touch-$ANDROID_ABI/licenses/roboto-license.txt"
+      - name: Upload unsigned APK and notices for release signing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-release-input-${{ matrix.abi }}
+          path: |
+            build/android-touch-${{ matrix.abi }}/vimgui-demo-unsigned.apk
+            build/android-touch-${{ matrix.abi }}/licenses
+          if-no-files-found: error
