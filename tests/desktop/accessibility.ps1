@@ -20,27 +20,38 @@ function Find-Control([string] $Name) {
 }
 function Require-Control([string] $Name) { Wait-For { Find-Control $Name } "Missing UIA control: $Name" }
 function Invoke-Control([string] $Name) {
+    Write-Output "Invoke: $Name"
     $Node = Require-Control $Name
     $Pattern = $Node.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
     $Pattern.Invoke()
+}
+function Toggle-Control([string] $Name) {
+    Write-Output "Toggle: $Name"
+    $Pattern = (Require-Control $Name).GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
+    $Pattern.Toggle()
+    return $Pattern
+}
+function Select-Control([string] $Name) {
+    Write-Output "Select: $Name"
+    $Pattern = (Require-Control $Name).GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern)
+    $Pattern.Select()
 }
 try {
     $Handle = Wait-For { $Process.Refresh(); if ($Process.MainWindowHandle -ne 0) { $Process.MainWindowHandle } } 'No gallery window'
     $Root = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
     foreach ($Name in @('Count', 'Name', 'High contrast', 'Files')) { $Node = Require-Control $Name; Write-Output "$Name : $($Node.Current.ControlType.ProgrammaticName)" }
     Invoke-Control 'Count'; $null = Require-Control 'Count: 1'
-    $Toggle = (Require-Control 'High contrast').GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern)
-    $Toggle.Toggle()
+    $Toggle = Toggle-Control 'High contrast'
     $null = Wait-For { $Toggle.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::On } 'Checkbox state did not update'
-    Invoke-Control '200% text'; Invoke-Control 'Focus last file'
+    $null = Toggle-Control '200% text'; Invoke-Control 'Focus last file'
     $Last = Require-Control 'Photo 0999.jpg'
     $Last.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
     $null = Require-Control 'Selected Photo 0999.jpg'
     $List = (Require-Control 'Files').GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern)
     $List.SetScrollPercent(-1, 50)
     $null = Wait-For { [Math]::Abs($List.Current.VerticalScrollPercent - 50) -lt 1 } 'Exact scroll percentage did not apply'
-    Invoke-Control 'Raw ImGui widgets'; $null = Require-Control 'Accessible controls'
-    Invoke-Control 'Accessible controls'; $null = Require-Control 'Name'
+    Select-Control 'Raw ImGui widgets'; $null = Require-Control 'Accessible controls'
+    Select-Control 'Accessible controls'; $null = Require-Control 'Name'
     $Unicode = 'A' + [char]0xd83d + [char]0xdcf7 + 'e' + [char]0x0301 + 'Z'
     $Field = Require-Control 'Name'
     $Value = $Field.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
