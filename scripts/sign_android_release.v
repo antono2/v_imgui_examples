@@ -135,7 +135,9 @@ fn run() ! {
 			unsigned, aligned])!
 		alias := if options['--alias'] != '' { options['--alias'] } else { 'v-imgui-release' }
 		password := 'file:' + options['--password-file']
-		release_tools.command(os.join_path(options['--build-tools'], 'apksigner'), [
+		release_tools.command('java', [
+			'-jar',
+			os.join_path(options['--build-tools'], 'lib', 'apksigner.jar'),
 			'sign',
 			'--ks',
 			options['--keystore'],
@@ -147,7 +149,9 @@ fn run() ! {
 			output,
 			aligned,
 		])!
-		release_tools.command(os.join_path(options['--build-tools'], 'apksigner'), [
+		release_tools.command('java', [
+			'-jar',
+			os.join_path(options['--build-tools'], 'lib', 'apksigner.jar'),
 			'verify',
 			'--verbose',
 			output,
