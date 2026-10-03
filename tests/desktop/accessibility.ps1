@@ -8,8 +8,8 @@ function Wait-For([scriptblock] $Probe, [string] $Message) {
     $Deadline = [DateTime]::UtcNow.AddSeconds(30)
     do {
         if ($Process.HasExited) { throw "Gallery exited with $($Process.ExitCode): $Message" }
-        $Value = & $Probe
-        if ($Value) { return $Value }
+        $ProbeResult = & $Probe
+        if ($ProbeResult) { return $ProbeResult }
         Start-Sleep -Milliseconds 100
     } while ([DateTime]::UtcNow -lt $Deadline)
     throw $Message
