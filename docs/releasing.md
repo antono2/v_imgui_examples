@@ -14,7 +14,7 @@ load `. scripts/setup_windows_build.ps1` in PowerShell to select Visual Studio.
 To package existing binaries, use `v -prod run scripts/package_release.v
 binary-dir imgui-dir output-dir docking`. License collection uses
 `v run scripts/collect_licenses.v imgui-dir output-dir`, with `android` as its
-last argument for mobile notices. Rust, Cargo and Python are not required.
+last argument for mobile notices.
 
 Desktop ZIPs are ready to promote after reviewing the checks. Android APKs are
 signed outside CI with the persistent private release key:

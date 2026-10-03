@@ -2,7 +2,7 @@
 
 Download assets from [Releases](https://github.com/antono2/v_imgui_examples/releases).
 The downloads include their application libraries. You do not need to install
-V, CMake, Rust, GLFW, an Android SDK, or a separate Visual C++ runtime.
+V, CMake, GLFW, an Android SDK, or a separate Visual C++ runtime.
 Your operating system, graphical desktop and graphics driver still provide the
 platform services. The examples use Vulkan; a supported Vulkan graphics driver
 is required.
