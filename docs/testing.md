@@ -41,6 +41,8 @@ Install the matching debug APK; its launcher label is **V ImGui Touch Examples**
 - [x] Move the cursor with touch and hardware keys, where available.
 - [x] Hide the keyboard with Back, then tap the active field to reopen it.
 - [x] Copy/read clipboard text, including non-ASCII text; clear the preview.
+- [x] Confirm Copy all text needs no selection; verify empty-field, copy, read, and clear feedback.
+- [x] Swipe static text and empty space in both directions; retain normal text selection and slider interaction.
 - [x] Rotate while editing; confirm text, count, and zoom survive window recreation.
 - [x] Background/resume the app and repeat an edit.
 - [x] Change zoom, use portrait/landscape, and reach the bottom controls by scrolling.

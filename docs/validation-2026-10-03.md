@@ -77,3 +77,41 @@ see controls. Review this behavior during the user's final release testing.
 
 Captures and logs are local under the ignored `build/interaction-checks/` directory.
 The release checklist remains the source of the remaining checks.
+
+## Swipe scrolling and clipboard feedback follow-up
+
+The user's subsequent tablet test identified two usability gaps in the first
+version: scrolling required the scrollbar, and clipboard actions had no visible
+confirmation. The earlier scrolling check above covered the scrollbar only.
+
+The V example now tracks touchscreen drags beginning on static text or empty
+window space. It starts after the window's widgets are submitted, excludes active
+controls, clamps to the scroll limits, and uses window-owned gesture state.
+Bottom padding keeps the last controls above the Android navigation overlay when
+scrolled to the end. This is direct dragging; there is no kinetic scrolling.
+
+Clipboard buttons now explain that Copy all text copies the whole editable field.
+An empty field prompts the user to enter text. Copy reads back the system
+clipboard, confirms equality, and displays the result; Read and Clear preview
+have explicit feedback. Editing clears stale action feedback. A field hint
+identifies where text can be entered.
+
+The corrected armeabi-v7a APK was rebuilt and installed on the same tablet:
+
+- Swiping explanatory text scrolled without touching the scrollbar. Swiping
+  empty space moved the page in both directions and clamped at the bottom.
+- Portrait tests at 1.19× and 1.62× reached the zoom and checklist controls.
+  Reverse swipes moved the page back; the slider changed zoom normally.
+- A horizontal drag inside the input selected a substring (offsets 14..2).
+  Copy all text still copied the full `SwipeClipboard42`, which appeared in
+  the clipboard preview with confirmation.
+- In the final build, empty Copy displayed its message; typing
+  `ClipboardFinal` cleared that message. Copy/Read displayed the full text
+  and read feedback. Clear removed the preview and explained that the system
+  clipboard was unchanged.
+- The process-filtered log contained no application crash, Vulkan error, or
+  failed input initialization. Original rotation settings were restored.
+
+The corrected APK remains installed. These are tablet checks, including its
+800-pixel portrait layout; physical phone and assistive-technology interaction
+remain outside this coverage.
