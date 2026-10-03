@@ -29,7 +29,6 @@ status/progress, and a virtual file list. Focus last file reveals the list and
 moves keyboard/native focus to its last row. Switch to Raw ImGui widgets for
 the original tables, popups and secondary windows. See
 [release installation](../../docs/installing-releases.md) for supported downloads.
-Use `scripts/build_release_linux.sh docking` or
-`scripts/build_release_windows.ps1 -Variant docking` to build the accessible
+Use `v -prod run scripts/build_release.v docking` to build the accessible
 package from prepared dependencies (Windows uses a Visual Studio developer shell).
 The normal setup command remains the direct raw API build.

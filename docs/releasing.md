@@ -7,11 +7,20 @@ Android inputs for three ABIs. Download the artifacts from that exact run.
 Retain the run URL and source commits in release notes. Do not publish CI debug
 APKs as release updates: their signing keys are temporary.
 
+The release helpers are V programs with shared build, packaging, license and
+ZIP code in `scripts/release_tools/`. From prepared dependencies, run
+`v -prod run scripts/build_release.v docking` (or `standard`). On Windows first
+load `. scripts/setup_windows_build.ps1` in PowerShell to select Visual Studio.
+To package existing binaries, use `v -prod run scripts/package_release.v
+binary-dir imgui-dir output-dir docking`. License collection uses
+`v run scripts/collect_licenses.v imgui-dir output-dir`, with `android` as its
+last argument for mobile notices. Rust, Cargo and Python are not required.
+
 Desktop ZIPs are ready to promote after reviewing the checks. Android APKs are
 signed outside CI with the persistent private release key:
 
 ```sh
-v run scripts/sign_android_release.v \
+v -prod run scripts/sign_android_release.v \
   --input /path/to/android-release-input-armeabi-v7a \
   --input /path/to/android-release-input-arm64-v8a \
   --input /path/to/android-release-input-x86_64 \
@@ -25,6 +34,7 @@ The script rejects mismatched common APK content, combines the ABI libraries,
 embeds license notices, aligns the APKs, signs them and verifies each signature.
 Keep the key and password private and backed up outside the repository. Never
 upload them as release assets. Use the same signing identity for updates.
+The private key uses the same password as the keystore.
 Increment `android:versionCode` and update `android:versionName` for each release.
 
 Test the final universal APK on a device, including the installation/update

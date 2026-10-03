@@ -14,9 +14,9 @@ jobs:
         variant: [docking, standard]
         include:
           - variant: docking
-            imgui-ref: 161bd5fa99d35fec1192b62cf22348ed785c3277
+            imgui-ref: 93401818d99f80afe6b97c042f215cc4f11dc7de
           - variant: standard
-            imgui-ref: 8067a7bb52a24e28ca4fbb7f35ff486d224ce91f
+            imgui-ref: 558339ea6c1977c2e18309e5a4b540058b659959
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
@@ -62,7 +62,7 @@ jobs:
           Copy-Item build/volk/volk.h, build/volk/volk.c $Destination
       - name: Build, bundle and render Linux releases
         if: runner.os == 'Linux'
-        run: bash scripts/build_release_linux.sh '${{ matrix.variant }}'
+        run: v -prod run scripts/build_release.v '${{ matrix.variant }}'
       - name: Exercise bundled gallery through native AT-SPI
         if: runner.os == 'Linux'
         run: |
@@ -71,7 +71,10 @@ jobs:
       - name: Build and audit Windows release DLLs
         if: runner.os == 'Windows'
         shell: pwsh
-        run: scripts/build_release_windows.ps1 -Variant '${{ matrix.variant }}'
+        run: |
+          . scripts/setup_windows_build.ps1
+          v -prod run scripts/build_release.v '${{ matrix.variant }}'
+          if ($LASTEXITCODE -ne 0) { throw 'Portable release build failed' }
       - name: Exercise native Windows UI Automation
         if: runner.os == 'Windows'
         shell: pwsh
@@ -118,7 +121,7 @@ jobs:
       - name: Build accessible touch app
         run: bash scripts/build_android.sh --build-only
       - name: Collect Android notices
-        run: bash scripts/collect_licenses.sh build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
+        run: v run scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
       - name: Upload unsigned APK and notices for release signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

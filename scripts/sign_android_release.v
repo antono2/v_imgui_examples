@@ -5,18 +5,7 @@ import os
 import rand
 import compress.szip
 import crypto.sha256
-
-fn command(program string, args []string) ! {
-	mut process := os.new_process(program)
-	process.set_args(args)
-	process.run()
-	process.wait()
-	code := process.code
-	process.close()
-	if code != 0 {
-		return error('${program} failed (${code})')
-	}
-}
+import release_tools
 
 fn archive_entries(path string) !map[string][]u8 {
 	mut archive := szip.open(path, .no_compression, .read_only)!
@@ -141,23 +130,28 @@ fn run() ! {
 				contents[name] = bytes
 			}
 		}
-		mut archive := szip.open(unsigned, .best_compression, .write)!
-		mut names := contents.keys()
-		names.sort()
-		for name in names {
-			archive.open_entry(name)!
-			archive.write_entry(contents[name])!
-			archive.close_entry()
-		}
-		archive.close()
-		command(os.join_path(options['--build-tools'], 'zipalign'), ['-f', '-p', '4', unsigned,
-			aligned])!
+		release_tools.zip_entries(unsigned, contents)!
+		release_tools.command(os.join_path(options['--build-tools'], 'zipalign'), ['-f', '-p', '4',
+			unsigned, aligned])!
 		alias := if options['--alias'] != '' { options['--alias'] } else { 'v-imgui-release' }
 		password := 'file:' + options['--password-file']
-		command(os.join_path(options['--build-tools'], 'apksigner'), ['sign', '--ks',
-			options['--keystore'], '--ks-key-alias', alias, '--ks-pass', password, '--key-pass',
-			password, '--out', output, aligned])!
-		command(os.join_path(options['--build-tools'], 'apksigner'), ['verify', '--verbose', output])!
+		release_tools.command(os.join_path(options['--build-tools'], 'apksigner'), [
+			'sign',
+			'--ks',
+			options['--keystore'],
+			'--ks-key-alias',
+			alias,
+			'--ks-pass',
+			password,
+			'--out',
+			output,
+			aligned,
+		])!
+		release_tools.command(os.join_path(options['--build-tools'], 'apksigner'), [
+			'verify',
+			'--verbose',
+			output,
+		])!
 		println('${sha256.hexhash(os.read_file(output)!)}  ${os.file_name(output)}')
 	}
 }
