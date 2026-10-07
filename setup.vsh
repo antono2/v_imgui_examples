@@ -275,8 +275,8 @@ fn guided_main() ! {
 		if vulkan_sdk.exit_code == 0 && vulkan_sdk.output.trim_space() != '' {
 			os.setenv('VULKAN_SDK', vulkan_sdk.output.trim_space(), true)
 		}
-		runner := os.join_path(imgui_root, 'scripts', 'run_demo_windows.ps1')
-		run('powershell -NoProfile -ExecutionPolicy Bypass -File ${os.quoted_path(runner)} -BuildOnly -DemoDirectory ${os.quoted_path(project_dir)} -DemoSource ${os.quoted_path(source)}') or {
+		runner := os.join_path(imgui_root, 'scripts', 'run_demo.vsh')
+		run('v run ${os.quoted_path(runner)} --build-only --demo-directory ${os.quoted_path(project_dir)} --demo-source ${os.quoted_path(source)}') or {
 			return err
 		}
 		os.cp(os.join_path(imgui_root, 'build', 'windows-demo', 'v_imgui_demo.exe'), example_binary)!

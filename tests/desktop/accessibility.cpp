@@ -1,3 +1,4 @@
+// Launches the gallery and checks named controls, states and actions through Linux AT-SPI.
 #include <atspi/atspi.h>
 #include <gio/gio.h>
 #include <algorithm>

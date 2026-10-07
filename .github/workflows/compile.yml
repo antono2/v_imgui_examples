@@ -173,8 +173,14 @@ jobs:
           foreach ($Example in @('glfw_vulkan', 'widget_gallery', 'implot_dashboard')) {
             $Source = if ($Example -eq 'glfw_vulkan') { 'source/demo' } else { "source/demo/examples/$Example" }
             $Executable = Join-Path $Output "$Example.exe"
-            v -no-memory-limit -path $ModulePath -cc msvc -o $Executable $Source
-            if ($LASTEXITCODE -ne 0) { throw "The Windows $Example did not compile" }
+            if ($Example -eq 'glfw_vulkan') {
+              v run source/demo/setup.vsh --build-only --example glfw_vulkan
+              if ($LASTEXITCODE -ne 0) { throw 'The Windows guided setup build failed' }
+              Copy-Item (Join-Path $ImguiRoot 'build\windows-demo\glfw_vulkan.exe') $Executable
+            } else {
+              v -no-memory-limit -path $ModulePath -cc msvc -o $Executable $Source
+              if ($LASTEXITCODE -ne 0) { throw "The Windows $Example did not compile" }
+            }
           }
           Copy-Item $GlfwDll.FullName, $VimguiDll.FullName $Output -Force
           foreach ($Artifact in @($Executable, $GlfwDll.FullName, $VimguiDll.FullName)) {
