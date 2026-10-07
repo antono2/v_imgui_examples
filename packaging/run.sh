@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Starts the packaged desktop example menu or a named example on Linux.
+# Locates the requested executable relative to the extracted package directory.
 set -euo pipefail
 package_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 if [[ $# -eq 0 ]]; then exec "$package_dir/examples"; fi

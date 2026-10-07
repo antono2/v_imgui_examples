@@ -1,3 +1,5 @@
+// Handles Escape and borderless-fullscreen shortcuts for the shared desktop host.
+// Preserves ImGui input ownership and restores the earlier window geometry.
 module glfw_vulkan
 
 import antono2.glfw

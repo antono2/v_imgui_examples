@@ -1,3 +1,5 @@
+// Collects upstream license files and embedded permission notices for redistributions.
+// Handles desktop runtime dependencies and Android font/FreeType notices separately.
 module release_tools
 
 import os

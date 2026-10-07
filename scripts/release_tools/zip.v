@@ -1,3 +1,5 @@
+// Writes ZIP32 archives for desktop packages and Android signing inputs.
+// Preserves entry permissions and fixed timestamps while rejecting archives beyond ZIP32 limits.
 module release_tools
 
 import os

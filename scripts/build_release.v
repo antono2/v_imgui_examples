@@ -1,4 +1,6 @@
 #!/usr/bin/env -S v -prod run
+// Builds desktop examples and their native ImGui library for a selected variant.
+// Prepares the binary directory consumed by the separate release packager.
 
 module main
 

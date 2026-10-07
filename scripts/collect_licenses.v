@@ -1,4 +1,6 @@
 #!/usr/bin/env -S v run
+// Collects dependency license notices for a desktop or Android distribution.
+// Delegates source selection and notice extraction to release_tools.
 
 module main
 

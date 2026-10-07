@@ -1,3 +1,5 @@
+# Exercises the released gallery through Windows UI Automation.
+# Checks labelled controls and selection behavior in a launched test process.
 param([Parameter(Mandatory)] [string] $Executable, [Parameter(Mandatory)] [string] $SelectionProbe)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient

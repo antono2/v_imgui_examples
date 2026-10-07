@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Renders each desktop example under Xvfb with Lavapipe and Vulkan validation.
+# Uses bounded frame counts, including dashboard history wraparound, and checks error logs.
 set -euo pipefail
 binary_dir="${1:?Usage: scripts/smoke_desktop.sh path/to/binaries}"
 command -v grep >/dev/null

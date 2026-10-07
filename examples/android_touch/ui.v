@@ -1,3 +1,5 @@
+// Exports the V UI callback used by the native Android Vulkan host.
+// Demonstrates touch input, IME selection, clipboard text, and scale controls.
 module main
 
 import antono2.imgui

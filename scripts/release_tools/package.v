@@ -1,3 +1,5 @@
+// Assembles portable desktop packages with their runtime dependencies and license notices.
+// Builds launchers, archive contents, and checksums from already compiled examples.
 module release_tools
 
 import os

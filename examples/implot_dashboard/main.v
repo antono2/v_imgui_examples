@@ -1,3 +1,5 @@
+// Draws selectable ImPlot series and a rolling sample history in the desktop host.
+// Creates and destroys plotting state through the host lifecycle callbacks.
 module main
 
 import examples.glfw_vulkan
