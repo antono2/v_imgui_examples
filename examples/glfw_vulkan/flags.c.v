@@ -2,14 +2,8 @@
 // Build with the matching ImGui backend library and configured Vulkan/GLFW paths.
 module glfw_vulkan
 
-#flag linux -I$env('VULKAN_SDK')/include
-#flag linux -I$env('VULKAN_SDK')/include/vulkan
-#flag linux -I$env('VULKAN_SDK')/include/volk
-#flag linux -L$env('VULKAN_SDK')/lib
-#flag windows -I$env('VULKAN_SDK')/Include
-#flag windows -I$env('VULKAN_SDK')/Include/vulkan
-#flag windows -I$env('VULKAN_SDK')/Include/Volk
-#flag windows -L$env('VULKAN_SDK')/Lib
+// antono2.vulkan supplies matching Vulkan headers and Volk. Adding SDK include
+// paths here can select older headers before the binding's bundled snapshot.
 // GLFW
 // https://www.glfw.org/docs/latest/vulkan_guide.html
 

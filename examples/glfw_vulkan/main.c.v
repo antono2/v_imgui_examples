@@ -383,7 +383,7 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 	check_vk_result(res)
 }
 
-pub fn (mut app App) setup_vulkan_window(mut wd &impl_vulkan.Window, surface vk.SurfaceKHR, width i32, height i32) {
+pub fn (mut app App) setup_vulkan_window(mut wd impl_vulkan.Window, surface vk.SurfaceKHR, width i32, height i32) {
 	wd.surface = surface
 	wd.clear_enable = true
 
