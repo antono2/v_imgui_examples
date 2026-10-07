@@ -1,3 +1,5 @@
+// Release-package launcher that selects a desktop example by argument or menu.
+// Locates bundled executables relative to the launcher and forwards their arguments.
 module main
 
 import os

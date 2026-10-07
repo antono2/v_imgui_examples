@@ -46,8 +46,12 @@ Install V and Git, then run this command from the checkout:
 
 Use the official V compiler. The tested compiler revisions are recorded in
 [the CI compiler setup](.github/actions/setup-v/action.yml).
-On Windows, use `v run setup.vsh` with the same options; the direct executable
-script commands below apply to Linux and macOS.
+The direct executable script commands below apply to Linux and macOS.
+The Windows branch of this checkout's guided runner still refers to the removed
+`run_demo_windows.ps1`. Until that entry point is updated, use the shared
+`v run scripts/run_demo.vsh` runner from the pinned ImGui checkout as described
+in its `QUICKSTART.md`; pass `--demo-directory` with this checkout's absolute
+path and `--demo-source` with the desired example's absolute path.
 
 The guided runner lets you choose an example, explains setup changes, builds it
 and opens it. It streams build progress and offers to run an existing desktop
@@ -89,11 +93,11 @@ this example. On Ubuntu or Debian, the shortest supported path is:
 ```bash
 git clone --recursive https://github.com/antono2/imgui
 cd imgui
-./scripts/setup_linux.sh --install
-./scripts/run_demo.sh
+./setup.vsh --install
+./scripts/run_demo.vsh
 ```
 
-Use `./scripts/setup_linux.sh --check` instead when system-changing package
+Use `./setup.vsh --check` instead when system-changing package
 installation is not wanted. See the ImGui
 [`QUICKSTART.md`](https://github.com/antono2/imgui/blob/master/QUICKSTART.md)
 for Fedora, Windows, static linkage, and bundled-GLFW choices.
@@ -106,7 +110,7 @@ Vulkan/GLFW locations before compiling this repository:
 ```bash
 v install antono2.imgui
 cd ~/.vmodules/antono2/imgui
-./build_vimgui.sh --linkage shared --glfw system
+./build_vimgui.vsh --linkage shared --glfw system
 
 git clone https://github.com/antono2/v_imgui_examples
 cd v_imgui_examples
@@ -145,5 +149,13 @@ created and destroyed through host lifecycle callbacks.
 The release gallery and touch app integrate the application/accessibility layer.
 Raw API views retain ordinary ImGui widgets; they do not automatically expose
 screen-reader semantics. iOS/Metal remains an upstream source integration.
+
+Each maintained code file starts with a short purpose comment. For build and
+release work, `scripts/build_release.v` prepares binaries,
+`scripts/package_release.v` assembles the desktop distribution, and
+`scripts/release_tools/` contains shared process, license, dependency, and ZIP
+helpers. `packaging/` contains the release launcher. Desktop rendering,
+shortcut, and accessibility checks live in `scripts/smoke_desktop.sh` and
+`tests/desktop/`; Android accessibility checks run against a connected device.
 
 ![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)

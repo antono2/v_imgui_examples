@@ -1,3 +1,5 @@
+// Connects the gallery's GLFW window to the native accessibility adapter.
+// Updates focus and window geometry and detaches the adapter during teardown.
 #ifndef V_IMGUI_GALLERY_ACCESSIBILITY_H
 #define V_IMGUI_GALLERY_ACCESSIBILITY_H
 #include "vimgui_app.h"

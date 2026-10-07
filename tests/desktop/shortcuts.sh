@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Exercises desktop Escape and fullscreen behavior using a private Xvfb session.
+# Drives built examples without sending input to the user's desktop.
 set -euo pipefail
 binary_dir=$(cd -- "${1:?Usage: shortcuts.sh binary-dir [--raw-gallery]}" && pwd)
 # Always use a private display; never send keys to the user's desktop.

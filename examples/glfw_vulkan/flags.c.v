@@ -1,3 +1,5 @@
+// Configures native includes and linking for the shared GLFW/Vulkan example host.
+// Build with the matching ImGui backend library and configured Vulkan/GLFW paths.
 module glfw_vulkan
 
 #flag linux -I$env('VULKAN_SDK')/include

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Builds the Android touch UI against the pinned ImGui native host.
+# Supports build-only APK production or an explicit connected-device run.
 set -euo pipefail
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 imgui_dir="${IMGUI_DIR:-$repo_dir/build/modules/antono2/imgui}"

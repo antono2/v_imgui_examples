@@ -1,3 +1,5 @@
+// Handles Escape and borderless-fullscreen shortcuts for the shared desktop host.
+// Preserves ImGui input ownership and restores the earlier window geometry.
 module glfw_vulkan
 
 import antono2.glfw
@@ -68,7 +70,8 @@ fn (mut mode WindowMode) toggle(window &glfw.Window) {
 	}
 	mode.decorated = glfw.get_window_attrib(window, glfw.decorated)
 	mode.maximized = glfw.get_window_attrib(window, glfw.maximized) != 0
-	if mode.maximized { glfw.restore_window(window) }
+	// Keep the window manager's saved normal bounds while entering fullscreen.
+	// Restoring first races its asynchronous maximize/fullscreen transitions on X11.
 	glfw.set_window_attrib(window, glfw.decorated, 0)
 	glfw.set_window_monitor(window, selected, 0, 0, video.width, video.height, video.refreshRate)
 	mode.fullscreen = true

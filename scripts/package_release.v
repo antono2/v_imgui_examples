@@ -1,4 +1,6 @@
 #!/usr/bin/env -S v -prod run
+// Packages prepared desktop binaries for the docking or standard variant.
+// Delegates dependency collection, notices, archive creation, and checksums to release_tools.
 
 module main
 

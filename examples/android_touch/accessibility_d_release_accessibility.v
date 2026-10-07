@@ -1,3 +1,5 @@
+// Draws the Android touch demo through labelled appui accessibility controls.
+// Selected by release_accessibility; the native host owns the persistent UI buffers.
 module main
 
 import math

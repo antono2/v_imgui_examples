@@ -1,3 +1,5 @@
+// Shared process execution and file helpers for release tooling.
+// Runs commands with argument vectors to preserve paths and literal linker values.
 module release_tools
 
 import os

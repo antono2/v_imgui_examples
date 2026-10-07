@@ -1,3 +1,5 @@
+// Builds the gallery's labelled native accessibility view when release_accessibility is enabled.
+// Shares the desktop host with the raw ImGui gallery and exposes text/contrast controls.
 module main
 
 import examples.glfw_vulkan
