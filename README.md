@@ -47,11 +47,12 @@ Install V and Git, then run this command from the checkout:
 Use the official V compiler. The tested compiler revisions are recorded in
 [the CI compiler setup](.github/actions/setup-v/action.yml).
 The direct executable script commands below apply to Linux and macOS.
-The Windows branch of this checkout's guided runner still refers to the removed
-`run_demo_windows.ps1`. Until that entry point is updated, use the shared
-`v run scripts/run_demo.vsh` runner from the pinned ImGui checkout as described
-in its `QUICKSTART.md`; pass `--demo-directory` with this checkout's absolute
-path and `--demo-source` with the desired example's absolute path.
+On Windows, run `v run setup.vsh` from a Developer PowerShell. The guided
+runner delegates native-library preparation and the selected example build to
+the pinned ImGui checkout's shared `scripts/run_demo.vsh` entry point, then
+keeps the named example executable beside its runtime DLLs. For a direct build,
+that upstream runner accepts `--build-only`, `--demo-directory` with this
+checkout's absolute path, and `--demo-source` with the example's absolute path.
 
 The guided runner lets you choose an example, explains setup changes, builds it
 and opens it. It streams build progress and offers to run an existing desktop
