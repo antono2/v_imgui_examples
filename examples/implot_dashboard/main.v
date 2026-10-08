@@ -41,7 +41,7 @@ fn main() {
 fn initialize_dashboard(userdata voidptr) {
 	mut state := unsafe { &Dashboard(userdata) }
 	state.context = implot.create_context()
-	// The native constructor supplies auto colors, marker defaults, and stride.
+	// The native constructor supplies auto colors, marker defaults and stride.
 	state.spec = implot.spec_spec()
 }
 

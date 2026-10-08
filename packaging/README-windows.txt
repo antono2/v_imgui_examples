@@ -12,8 +12,8 @@ You can also open an example directly:
 In an example, Escape quits after active controls consume it to cancel an edit
 or popup. F11 toggles borderless fullscreen and restores the previous window.
 
-ImGui/ImPlot, GLFW, the Vulkan loader, and the Microsoft Visual C++ runtime
-DLLs are included beside the applications. No compiler, SDK, or separate
+ImGui/ImPlot, GLFW, the Vulkan loader and the Microsoft Visual C++ runtime
+DLLs are included beside the applications. No compiler, SDK or separate
 Visual C++ runtime installation is needed. Keep the whole folder together.
 
 A Vulkan-capable graphics driver and a graphical Windows desktop are

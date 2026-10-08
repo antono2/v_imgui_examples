@@ -1,4 +1,4 @@
-// Small C helpers for frame-limited smoke runs, navigation, and shortcut ownership.
+// Small C helpers for frame-limited smoke runs, navigation and shortcut ownership.
 // Uses the pinned cimgui structures to expose state consumed by the V host.
 #ifndef V_IMGUI_EXAMPLE_BRIDGE_H
 #define V_IMGUI_EXAMPLE_BRIDGE_H

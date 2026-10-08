@@ -1,5 +1,5 @@
 // Exports the V UI callback used by the native Android Vulkan host.
-// Demonstrates touch input, IME selection, clipboard text, and scale controls.
+// Demonstrates touch input, IME selection, clipboard text and scale controls.
 module main
 
 import antono2.imgui
@@ -107,7 +107,7 @@ fn draw_ui(zoom &f32, taps &int, text &char, text_capacity int, clipboard &char,
 		zoom_changed = imgui.slider_float(c'##zoom', zoom, 0.75, 2, c'%.2fx', 0)
 		imgui.text_wrapped(c'Zoom scales fonts and controls together. Use portrait and landscape orientations to check the scrollable layout.')
 		if imgui.collapsing_header_tree_node_flags(c'Testing checklist', 0) {
-			imgui.text_wrapped(c'1. Type non-ASCII text and replace a selection.\n2. Hide the keyboard with Back, then tap the field again.\n3. Copy and read text.\n4. Rotate, background, and resume.\n5. Change zoom and reach the bottom controls.')
+			imgui.text_wrapped(c'1. Type non-ASCII text and replace a selection.\n2. Hide the keyboard with Back, then tap the field again.\n3. Copy and read text.\n4. Rotate, background and resume.\n5. Change zoom and reach the bottom controls.')
 		}
 		touch_scroll()
 	}

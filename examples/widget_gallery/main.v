@@ -1,4 +1,4 @@
-// Demonstrates editable buffers, controls, tables, and popups in the shared desktop host.
+// Demonstrates editable buffers, controls, tables and popups in the shared desktop host.
 // The release_accessibility build selects the companion accessible gallery.
 module main
 

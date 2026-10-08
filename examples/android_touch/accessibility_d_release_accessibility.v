@@ -27,7 +27,7 @@ fn draw_accessible_touch(zoom &f32, taps &int, text &char, text_capacity int, cl
 	}
 	contrast := C.v_imgui_touch_contrast()
 	appui.text(2, 'V ImGui: touch and text')
-	appui.text(3, 'Swipe text or empty space to scroll. Use touch, a keyboard, or your screen reader.')
+	appui.text(3, 'Swipe text or empty space to scroll. Use touch, a keyboard or your screen reader.')
 	appui.checkbox(4, 'High contrast', contrast)
 	if appui.button(5, 'Tap counter') {
 		unsafe { *taps += 1 }
@@ -88,7 +88,7 @@ fn draw_accessible_touch(zoom &f32, taps &int, text &char, text_capacity int, cl
 	scale := 'Text size: ${unsafe { *zoom }:.2f}x'
 	appui.status(23, scale)
 	unsafe { scale.free() }
-	appui.text(24, 'Rotate or resume to check retained text, taps, and text size. Navigation bars and the keyboard reserve their space automatically.')
+	appui.text(24, 'Rotate or resume to check retained text, taps and text size. Navigation bars and the keyboard reserve their space automatically.')
 	appui.end_frame() or { panic(err) }
 	// This view owns its accessible theme, including touch target sizing.
 	appui.theme(true, unsafe { *contrast }, base_scale * unsafe { *zoom }, true)
