@@ -14,7 +14,7 @@ reuses upstream's native Vulkan/Activity host and constructs its UI in V.
 | [ImPlot dashboard](examples/implot_dashboard/README.md) | Lines, scatter plots, series selection, rolling history | Desktop |
 | [Touch and text](examples/android_touch/README.md) | Touch controls, IME selection, clipboard, scaling | Android |
 
-CI pins ImGui, GLFW, Vulkan, and V revisions. Linux renders all desktop examples
+CI pins ImGui, GLFW, Vulkan and V revisions. Linux renders all desktop examples
 with Vulkan validation in both standard and docking variants; Windows compiles
 all desktop examples. Android CI builds debug APKs for three ABIs. Device testing
 is required before release; see [the testing checklist](docs/testing.md).
@@ -52,7 +52,7 @@ runner delegates native-library preparation and the selected example build to
 the pinned ImGui checkout's shared `scripts/run_demo.vsh` entry point, then
 keeps the named example executable beside its runtime DLLs. For a direct build,
 that upstream runner accepts `--build-only`, `--demo-directory` with this
-checkout's absolute path, and `--demo-source` with the example's absolute path.
+checkout's absolute path and `--demo-source` with the example's absolute path.
 
 The guided runner lets you choose an example, explains setup changes, builds it
 and opens it. It streams build progress and offers to run an existing desktop
@@ -101,11 +101,11 @@ cd imgui
 Use `./setup.vsh --check` instead when system-changing package
 installation is not wanted. See the ImGui
 [`QUICKSTART.md`](https://github.com/antono2/imgui/blob/master/QUICKSTART.md)
-for Fedora, Windows, static linkage, and bundled-GLFW choices.
+for Fedora, Windows, static linkage and bundled-GLFW choices.
 
 ## Direct source build
 
-Install the V modules, build the native ImGui library, and configure the
+Install the V modules, build the native ImGui library and configure the
 Vulkan/GLFW locations before compiling this repository:
 
 ```bash
@@ -144,7 +144,7 @@ floating windows and reports that docking is unavailable.
 The root `main.v` retains the GLFW/Vulkan demo as the default. Each new desktop
 example has its own `main.v`; the Android UI exports the callback consumed by
 the upstream native host. `examples/glfw_vulkan/` contains the shared desktop
-loop, native flags, and the default demo UI. ImPlot context/spec objects are
+loop, native flags and the default demo UI. ImPlot context/spec objects are
 created and destroyed through host lifecycle callbacks.
 
 The release gallery and touch app integrate the application/accessibility layer.
@@ -153,10 +153,10 @@ screen-reader semantics. iOS/Metal remains an upstream source integration.
 
 Each maintained code file starts with a short purpose comment. For build and
 release work, `scripts/build_release.v` prepares binaries,
-`scripts/package_release.v` assembles the desktop distribution, and
-`scripts/release_tools/` contains shared process, license, dependency, and ZIP
+`scripts/package_release.v` assembles the desktop distribution and
+`scripts/release_tools/` contains shared process, license, dependency and ZIP
 helpers. `packaging/` contains the release launcher. Desktop rendering,
-shortcut, and accessibility checks live in `scripts/smoke_desktop.sh` and
+shortcut and accessibility checks live in `scripts/smoke_desktop.sh` and
 `tests/desktop/`; Android accessibility checks run against a connected device.
 
 ![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)

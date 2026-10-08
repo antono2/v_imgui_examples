@@ -14,7 +14,7 @@ fullscreen. Escape first cancels an active edit, drag, popup or navigation
 operation. Frame callbacks that bind Escape themselves must set
 `app.escape_handled = true` in the frame where they consume it.
 
-`main.c.v` owns the GLFW window, Vulkan objects, frame submission, and shutdown.
+`main.c.v` owns the GLFW window, Vulkan objects, frame submission and shutdown.
 `ui.v` owns the default demo's persistent state. Other desktop examples pass a
 frame callback and borrowed state pointer to `glfw_vulkan.run`. Optional
 initialize/shutdown callbacks run while the ImGui context is alive.

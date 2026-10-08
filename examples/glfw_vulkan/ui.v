@@ -1,4 +1,4 @@
-// Default desktop demo UI showing upstream variant, docking, and backend state.
+// Default desktop demo UI showing upstream variant, docking and backend state.
 // Runs inside the shared GLFW/Vulkan host rather than owning a separate render loop.
 module glfw_vulkan
 

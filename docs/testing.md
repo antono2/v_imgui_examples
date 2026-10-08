@@ -2,15 +2,15 @@
 
 Build and rendering results are recorded in the PR checks. See
 [the 2026-10-03 interaction report](validation-2026-10-03.md) for completed checks,
-the viewport fix, and the remaining device checks.
+the viewport fix and the remaining device checks.
 
 ## Automated checks
 
 - Compile all desktop examples on Linux and Windows with pinned dependencies.
 - Compile and render the standard ImGui variant on Linux.
-- Render with Lavapipe, Xvfb, and Vulkan validation; reject errors and require clean shutdown.
+- Render with Lavapipe, Xvfb and Vulkan validation; reject errors and require clean shutdown.
 - Render 660 dashboard frames to cross the 600-sample ring boundary.
-- Compile Android V UI and package signed debug APKs for armeabi-v7a, arm64-v8a, and x86_64.
+- Compile Android V UI and package signed debug APKs for armeabi-v7a, arm64-v8a and x86_64.
 - Check package identity and the native V UI export.
 - Keep current dependency masters as an advisory compatibility check.
 
@@ -23,7 +23,7 @@ scripts/smoke_desktop.sh "$PWD/build"
 ## Desktop interaction
 
 - [x] Type a name; verify it appears in Details.
-- [x] Change the gallery checkbox, slider, and combo; reopen the popup and secondary windows.
+- [x] Change the gallery checkbox, slider and combo; reopen the popup and secondary windows.
 - [x] Resize table columns and the main window; collapse/reopen windows.
 - [x] Close and reopen the upstream demo.
 - [x] Try standard and docking variants; toggle dockspace and platform viewports where supported.
@@ -31,7 +31,7 @@ scripts/smoke_desktop.sh "$PWD/build"
 - [x] Pan/zoom waveforms; pause/resume/reset history and observe a full wrap.
 - [x] Close each application normally.
 - [x] Escape quits each desktop example; active text editing and popups consume it first.
-- [x] F11 toggles borderless fullscreen, preserves normal/maximized restore bounds, and does not repeat while held.
+- [x] F11 toggles borderless fullscreen, preserves normal/maximized restore bounds and does not repeat while held.
 
 Run `./tests/desktop/shortcuts.sh binary-dir --raw-gallery` for keyboard checks
 of source builds, or omit `--raw-gallery` for accessible release builds. The
@@ -41,7 +41,7 @@ while toggling fullscreen. These keyboard checks were verified locally on Linux.
 
 ## Android interaction
 
-Record the APK revision, ABI, device/Android version, keyboard app, and languages.
+Record the APK revision, ABI, device/Android version, keyboard app and languages.
 Install the matching debug APK; its launcher label is **V ImGui Touch Examples**.
 
 - [x] Tap the counter repeatedly and check the progress indicator.
@@ -49,14 +49,14 @@ Install the matching debug APK; its launcher label is **V ImGui Touch Examples**
 - [x] Move the cursor with touch and hardware keys, where available.
 - [x] Hide the keyboard with Back, then tap the active field to reopen it.
 - [x] Copy/read clipboard text, including non-ASCII text; clear the preview.
-- [x] Confirm Copy all text needs no selection; verify empty-field, copy, read, and clear feedback.
+- [x] Confirm Copy all text needs no selection; verify empty-field, copy, read and clear feedback.
 - [x] Swipe static text and empty space in both directions; retain normal text selection and slider interaction.
-- [x] Rotate while editing; confirm text, count, and zoom survive window recreation.
+- [x] Rotate while editing; confirm text, count and zoom survive window recreation.
 - [x] Background/resume the app and repeat an edit.
-- [x] Change zoom, use portrait/landscape, and reach the bottom controls by scrolling.
+- [x] Change zoom, use portrait/landscape and reach the bottom controls by scrolling.
 - [x] Adapt to visible/hidden navigation bars and keyboard; keep the bottom controls inside the usable area.
 - [x] Relaunch after process termination; confirm the sample starts with fresh state.
-- [x] Check logcat for crashes, Vulkan errors, or failed input initialization.
+- [x] Check logcat for crashes, Vulkan errors or failed input initialization.
 
 ```sh
 adb logcat -s vimgui-android-demo:I AndroidRuntime:E
@@ -81,7 +81,7 @@ RichEdit on this runner; the comparison and reproduction instructions are in
 
 On the connected Android tablet, the integrated accessibility build passed native
 roles/actions, checkbox state, progress ranges, Unicode text and UTF-16 selection,
-full-field clipboard copy/read and feedback, zoom, scrolling from static text,
+full-field clipboard copy/read and feedback, zoom, scrolling from static text
 and resume state. Repeat with the final release APK and test portrait/landscape,
 visible system navigation bars and IME. Check TalkBack spoken navigation manually;
 provider action tests do not establish the quality of spoken announcements.

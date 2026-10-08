@@ -1,5 +1,5 @@
 // Shared desktop host for the GLFW/Vulkan examples.
-// Owns window, swapchain, and render-loop setup while invoking example UI lifecycle callbacks.
+// Owns window, swapchain and render-loop setup while invoking example UI lifecycle callbacks.
 module glfw_vulkan
 
 import antono2.vulkan as vk

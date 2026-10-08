@@ -186,7 +186,7 @@ fn guided_main() ! {
 		example_binary = os.join_path(imgui_root, 'build', 'windows-demo', example + '.exe')
 	}
 	if interactive && example != 'android_touch' && os.is_file(example_binary) {
-		choice := (ask('Existing build: run [Enter], rebuild [b], prepare dependencies again [s], or quit [q]: ')!).to_lower()
+		choice := (ask('Existing build: run [Enter], rebuild [b], prepare dependencies again [s] or quit [q]: ')!).to_lower()
 		match choice {
 			'' {
 				run(os.quoted_path(example_binary))!
