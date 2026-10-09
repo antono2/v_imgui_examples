@@ -64,6 +64,9 @@ jobs:
         run: |
           make local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
+      - name: Verify the declared dependency graph
+        shell: bash
+        run: v run source/demo/scripts/check_installed_deps.vsh
       - name: Install native dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl gdb
       - name: Build native ImGui library
@@ -135,6 +138,9 @@ jobs:
         shell: pwsh
         run: |
           "$env:GITHUB_WORKSPACE\toolchain\v" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Verify the declared dependency graph
+        shell: bash
+        run: v run source/demo/scripts/check_installed_deps.vsh
       - name: Install Vulkan SDK and SwiftShader test artifacts
         shell: bash
         run: v run source/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh 1.4.309.0 v1.2
@@ -249,6 +255,9 @@ jobs:
         run: |
           make -C toolchain/v local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
+      - name: Verify the declared dependency graph
+        shell: bash
+        run: v run source/demo/scripts/check_installed_deps.vsh
       - name: Check demo with V3
         run: |
           for source in source/demo source/demo/examples/widget_gallery source/demo/examples/implot_dashboard; do

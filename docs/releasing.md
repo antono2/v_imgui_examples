@@ -37,7 +37,7 @@ embeds license notices, aligns the APKs, signs them and verifies each signature.
 Keep the key and password private and backed up outside the repository. Never
 upload them as release assets. Use the same signing identity for updates.
 The private key uses the same password as the keystore.
-Increment `android:versionCode` and update `android:versionName` for each release.
+Increment `android:versionCode` and update `android:versionName` whenever publishing newly built Android APKs.
 
 Test the final universal APK on a device, including the installation/update
 path. Review [the testing checklist](testing.md) and package instructions.
@@ -45,3 +45,22 @@ Generate `SHA256SUMS.txt` from the final ZIP and APK files. Tag the verified
 commits only after checks pass, then publish the assets and installation link.
 The upstream imgui release has a docking tag and a companion `-standard` source
 tag; the same example packages can be attached to both repositories' releases.
+
+## Desktop-only patch releases
+
+A desktop fix can be released without rebuilding Android. Run the full portable
+workflow for the new source commit and promote the four checked desktop ZIPs.
+For unchanged Android code, retain the four signed APKs from the previous
+release byte-for-byte. Verify their SHA-256 hashes against that release before
+uploading them, and include them in the new `SHA256SUMS.txt`.
+
+State explicitly in the release notes and `BUILD-PROVENANCE.txt` that the APKs
+retain their previous source revision, Android version and signing identity.
+Do not label retained APKs as builds of the desktop patch. New CI debug APKs
+remain test artifacts. An Android change requires new version metadata, signing
+and device validation as described above.
+
+Required desktop jobs run `scripts/check_installed_deps.vsh` before building.
+It compares every direct and transitive `v.mod` pin with the installed Git tag
+commit. The standard lane explicitly selects `antono2.imgui=-standard`; other
+lanes must match the declared tags. Keep advisory master jobs separate.
