@@ -177,10 +177,11 @@ fn guided_main() ! {
 	}
 	os.setenv('VMODULES', module_dir, true)
 	imgui_root := os.join_path(module_dir, 'antono2', 'imgui')
-	revision := (os.read_file(os.join_path(project_dir, 'IMGUI_REVISION')) or { return err }).trim_space()
-	if revision.len != 40 || !revision.bytes().all((it >= `0` && it <= `9`) || (it >= `a` && it <= `f`)) {
-		return error('IMGUI_REVISION must contain a full lowercase Git commit SHA')
+	pin := os.execute('${os.quoted_path(@VEXE)} run ${os.quoted_path(os.join_path(project_dir, 'scripts', 'imgui_release.vsh'))}')
+	if pin.exit_code != 0 {
+		return error('Cannot read ImGui release from v.mod: ${pin.output}')
 	}
+	tag := pin.output.trim_space()
 	mut example_binary := os.join_path(project_dir, 'build', example)
 	$if windows {
 		example_binary = os.join_path(imgui_root, 'build', 'windows-demo', example + '.exe')
@@ -251,12 +252,14 @@ fn guided_main() ! {
 		if status.exit_code != 0 || status.output.trim_space() != '' {
 			return error('ImGui dependency checkout contains changes; commit them or use a fresh VMODULES directory')
 		}
-		run('git -C ${os.quoted_path(imgui_root)} fetch origin ${revision.trim_space()}') or { return err }
-		run('git -C ${os.quoted_path(imgui_root)} checkout --detach ${revision.trim_space()}') or { return err }
+		run('git -C ${os.quoted_path(imgui_root)} fetch origin tag ${os.quoted_path(tag)}') or { return err }
+		run('git -C ${os.quoted_path(imgui_root)} checkout --detach ${os.quoted_path('refs/tags/' + tag)}') or { return err }
 	}
+	expected := os.execute('git -C ${os.quoted_path(imgui_root)} rev-parse ${os.quoted_path('refs/tags/' + tag + '^{commit}')}')
 	current := os.execute('git -C ${os.quoted_path(imgui_root)} rev-parse HEAD')
-	if current.exit_code != 0 || current.output.trim_space() != revision.trim_space() {
-		return error('ImGui must match IMGUI_REVISION; run --install with a clean dependency checkout')
+	if expected.exit_code != 0 || current.exit_code != 0
+		|| current.output.trim_space() != expected.output.trim_space() {
+		return error('ImGui must match ${tag} from v.mod; run --install with a clean dependency checkout')
 	}
 	imgui_setup := os.join_path(imgui_root, 'setup.vsh')
 	if !os.is_file(imgui_setup) {

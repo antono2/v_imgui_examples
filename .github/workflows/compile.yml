@@ -65,7 +65,7 @@ jobs:
           make local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
       - name: Install native dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl gdb
       - name: Build native ImGui library
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
@@ -81,7 +81,9 @@ jobs:
       - name: Render desktop examples with Vulkan validation
         run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
       - name: Check desktop keyboard shortcuts
-        run: ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
+        run: |
+          sudo sysctl kernel.yama.ptrace_scope=0
+          ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
       - name: Verify executable
         run: test -x "$RUNNER_TEMP/glfw_vulkan" && test -x "$RUNNER_TEMP/widget_gallery" && test -x "$RUNNER_TEMP/implot_dashboard"
 

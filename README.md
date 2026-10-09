@@ -70,7 +70,7 @@ installers may still request administrator authorization:
 ```
 
 Setup uses an isolated `build/modules` dependency directory and checks out the
-ImGui commit recorded in `IMGUI_REVISION`. It does not discard changes in an
+ImGui release declared in `v.mod`. It does not discard changes in an
 existing dependency checkout. Set `VMODULES` to use a different module directory.
 The setup may install system prerequisites through the upstream setup script.
 
