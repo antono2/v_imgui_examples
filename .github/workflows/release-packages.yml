@@ -18,9 +18,9 @@ jobs:
         variant: [docking, standard]
         include:
           - variant: docking
-            imgui-ref: v0.3.0
+            imgui-ref: v0.3.1
           - variant: standard
-            imgui-ref: v0.3.0-standard
+            imgui-ref: v0.3.1-standard
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: antono2/glfw
-          ref: v2.0.0
+          ref: v2.0.1
           path: build/modules/antono2/glfw
       - name: Install Linux build and rendering tools
         if: runner.os == 'Linux'
