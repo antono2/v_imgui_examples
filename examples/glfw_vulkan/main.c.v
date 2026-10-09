@@ -128,6 +128,17 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	// events can prevent that wait from reaching its timeout during creation.
 	glfw.poll_events()
 	glfw.show_window(window)
+	// Showing a window can return before its window manager maps it. Mesa's
+	// X11 FIFO presentation can then block before another event poll occurs.
+	// Observe visibility before submitting the first frame, without sleeping
+	// indefinitely if the display/window manager cannot show this window.
+	visibility_deadline := glfw.get_time() + 5.0
+	for glfw.get_window_attrib(window, glfw.visible) == 0 {
+		if glfw.get_time() >= visibility_deadline {
+			panic('Window did not become visible within 5 seconds')
+		}
+		glfw.wait_events_timeout(0.01)
+	}
 
 	// No custom fonts are loaded, so Dear ImGui uses its default font.
 
@@ -240,7 +251,7 @@ pub mut:
 	swapchain_rebuild     bool
 	swapchain_image_usage vk.ImageUsageFlags = vk.ImageUsageFlags(vk.ImageUsageFlagBits.color_attachment)
 	docking_available     bool
-	dockspace_enabled     bool = true
+	dockspace_enabled     bool         = true
 	clear_color           imgui.ImVec4 = imgui.ImVec4{
 		x: 0.45
 		y: 0.55
@@ -364,11 +375,11 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 	// sampled-image descriptors for each texture registered by the application.
 	mut pool_sizes := []vk.DescriptorPoolSize{}
 	pool_sizes << vk.DescriptorPoolSize{
-		type: vk.DescriptorType.sampled_image
+		type:            vk.DescriptorType.sampled_image
 		descriptorCount: u32(8)
 	}
 	pool_sizes << vk.DescriptorPoolSize{
-		type: vk.DescriptorType.sampler
+		type:            vk.DescriptorType.sampler
 		descriptorCount: u32(2)
 	}
 	mut pool_info := vk.DescriptorPoolCreateInfo{}
