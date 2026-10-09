@@ -49,7 +49,7 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 	// Create window with Vulkan context
 	glfw.window_hint(glfw.client_api, glfw.no_api)
-	// Map the window after its renderer and UI are ready.
+	// Create hidden so startup events can be drained before mapping.
 	glfw.window_hint(glfw.visible, 0)
 	// Borderless fullscreen should remain available when switching applications.
 	glfw.window_hint(glfw.auto_iconify, 0)
@@ -57,6 +57,23 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	main_scale := f32(1.0)
 	window := glfw.create_windowed(i32(1200 * main_scale), i32(800 * main_scale), options.title) or {
 		panic(err)
+	}
+
+	// Map before renderer setup adds more X11 requests and events. GLFW 3.3
+	// can otherwise return from its visibility wait with the window unmapped.
+	// Drain startup events before asking the window manager to map it.
+	glfw.poll_events()
+	glfw.show_window(window)
+	// Showing a window can return before its window manager maps it. Mesa's
+	// X11 FIFO presentation can then block before another event poll occurs.
+	// Observe visibility before submitting the first frame, without sleeping
+	// indefinitely if the display/window manager cannot show this window.
+	visibility_deadline := glfw.get_time() + 5.0
+	for glfw.get_window_attrib(window, glfw.visible) == 0 {
+		if glfw.get_time() >= visibility_deadline {
+			panic('Window did not become visible within 5 seconds')
+		}
+		glfw.wait_events_timeout(0.01)
 	}
 
 	if !glfw.vulkan_supported() {
@@ -124,21 +141,6 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	impl_vulkan.vkinit(&init_info)
 
 	options.initialize(state)
-	// Drain startup events before GLFW's X11 visibility wait. Queued unrelated
-	// events can prevent that wait from reaching its timeout during creation.
-	glfw.poll_events()
-	glfw.show_window(window)
-	// Showing a window can return before its window manager maps it. Mesa's
-	// X11 FIFO presentation can then block before another event poll occurs.
-	// Observe visibility before submitting the first frame, without sleeping
-	// indefinitely if the display/window manager cannot show this window.
-	visibility_deadline := glfw.get_time() + 5.0
-	for glfw.get_window_attrib(window, glfw.visible) == 0 {
-		if glfw.get_time() >= visibility_deadline {
-			panic('Window did not become visible within 5 seconds')
-		}
-		glfw.wait_events_timeout(0.01)
-	}
 
 	// No custom fonts are loaded, so Dear ImGui uses its default font.
 

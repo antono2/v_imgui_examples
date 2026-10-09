@@ -3,6 +3,10 @@
 Build and rendering results are recorded in the PR checks. See
 [the 2026-10-03 interaction report](validation-2026-10-03.md) for completed checks,
 the viewport fix and the remaining device checks.
+[The 2026-10-09 follow-up](validation-2026-10-09.md) records the Linux startup
+fix, dependency checks and desktop patch release scope. Checked interaction
+items below describe the recorded earlier sessions; they do not imply a new
+manual session for each release.
 
 ## Automated checks
 
