@@ -4,20 +4,21 @@
 set -euo pipefail
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 imgui_dir="${IMGUI_DIR:-$repo_dir/build/modules/antono2/imgui}"
-revision="$(tr -d '\r\n' < "$repo_dir/IMGUI_REVISION")"
 mode="${1:---build-only}"
 if [[ $# -gt 1 || ( "$mode" != --build-only && "$mode" != run ) ]]; then
   echo 'Usage: scripts/build_android.sh [--build-only|run]' >&2
   exit 2
 fi
+tag="$("${V_BIN:-v}" run "$repo_dir/scripts/imgui_release.vsh")"
 if [[ ! -f "$imgui_dir/v.mod" ]]; then
   mkdir -p "$(dirname "$imgui_dir")"
   git clone https://github.com/antono2/imgui.git "$imgui_dir"
-  git -C "$imgui_dir" fetch origin "$revision"
-  git -C "$imgui_dir" checkout --detach "$revision"
+  git -C "$imgui_dir" fetch origin tag "$tag"
+  git -C "$imgui_dir" checkout --detach "refs/tags/$tag"
 fi
-if [[ "$(git -C "$imgui_dir" rev-parse HEAD)" != "$revision" ]]; then
-  echo "ImGui must be at $revision; use a fresh IMGUI_DIR or check out that revision." >&2
+expected="$(git -C "$imgui_dir" rev-parse "refs/tags/$tag^{commit}")"
+if [[ "$(git -C "$imgui_dir" rev-parse HEAD)" != "$expected" ]]; then
+  echo "ImGui must match $tag from v.mod; use a fresh IMGUI_DIR or check out that tag." >&2
   exit 2
 fi
 git -C "$imgui_dir" submodule update --init --recursive

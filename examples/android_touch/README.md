@@ -25,7 +25,8 @@ scripts/build_android.sh --build-only
 The signed debug APK is
 `build/android-touch-<abi>/vimgui-demo-<abi>.apk`. The default command only builds.
 Set `V_BIN` to choose a compiler or `IMGUI_DIR` to reuse a checkout at exactly the
-commit in `IMGUI_REVISION`. The build initializes that checkout's submodules.
+release declared in the root `v.mod`. The build initializes that checkout's
+submodules.
 
 To build, install and launch on your selected device:
 

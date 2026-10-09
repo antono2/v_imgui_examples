@@ -4,5 +4,5 @@ Module {
   author: 'Anton Oreskin'
   version: '1.0.0'
   license: 'MIT'
-  dependencies: ['antono2.imgui']
+  dependencies: ['antono2.imgui@v0.3.1']
 }

@@ -2,6 +2,7 @@ name: Compile example
 
 on:
   push:
+    paths-ignore: ['**/*.md']
     branches: [master]
   pull_request:
     branches: [master]
@@ -9,6 +10,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ubuntu24:
@@ -26,18 +31,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
+          ref: v0.3.1
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/vulkan
-          ref: v3.2.0
+          ref: v3.2.2
           path: source/modules/antono2/vulkan
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/glfw
-          ref: v2.0.0
+          ref: v2.0.1
           path: source/modules/antono2/glfw
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -60,7 +65,7 @@ jobs:
           make local=1
           echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
       - name: Install native dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl gdb
       - name: Build native ImGui library
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
@@ -76,7 +81,9 @@ jobs:
       - name: Render desktop examples with Vulkan validation
         run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
       - name: Check desktop keyboard shortcuts
-        run: ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
+        run: |
+          sudo sysctl kernel.yama.ptrace_scope=0
+          ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
       - name: Verify executable
         run: test -x "$RUNNER_TEMP/glfw_vulkan" && test -x "$RUNNER_TEMP/widget_gallery" && test -x "$RUNNER_TEMP/implot_dashboard"
 
@@ -92,18 +99,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
+          ref: v0.3.1
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/vulkan
-          ref: v3.2.0
+          ref: v3.2.2
           path: source/modules/antono2/vulkan
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/glfw
-          ref: v2.0.0
+          ref: v2.0.1
           path: source/modules/antono2/glfw
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -210,18 +217,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: fa2e194d447a4cb0975126b1d83e45889e7cadd9
+          ref: v0.3.1
           path: source/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/vulkan
-          ref: 42e6c381e37952ef07f4cd560c9996fd2435cd41
+          ref: v3.2.2
           path: source/modules/antono2/vulkan
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/glfw
-          ref: v2.0.0
+          ref: v2.0.1
           path: source/modules/antono2/glfw
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
