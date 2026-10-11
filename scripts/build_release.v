@@ -6,7 +6,7 @@ module main
 
 import os
 import release_tools
-import json
+import json2
 
 struct Compatibility {
 	glfw string
@@ -36,7 +36,7 @@ fn run() ! {
 	}
 	variant := os.args[1]
 	root := os.dir(os.dir(@FILE))
-	compatibility := json.decode(Compatibility, os.read_file(os.join_path(root, 'compatibility.json'))!)!
+	compatibility := json2.decode[Compatibility](os.read_file(os.join_path(root, 'compatibility.json'))!)!
 	imgui := if os.getenv('IMGUI_DIR') != '' {
 		os.getenv('IMGUI_DIR')
 	} else {

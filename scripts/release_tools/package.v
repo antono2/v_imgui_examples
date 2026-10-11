@@ -4,7 +4,7 @@ module release_tools
 
 import os
 import crypto.sha256
-import json
+import json2
 
 struct NativeCompatibility {
 	glfw string
@@ -167,8 +167,7 @@ fn windows_os_library(name string) bool {
 }
 
 fn package_windows(root string, binaries string, imgui string, output string) ![]string {
-	compatibility := json.decode(NativeCompatibility,
-		os.read_file(os.join_path(root, 'compatibility.json'))!)!
+	compatibility := json2.decode[NativeCompatibility](os.read_file(os.join_path(root, 'compatibility.json'))!)!
 	for example in examples {
 		copy(os.join_path(binaries, example + '.exe'), os.join_path(output, example + '.exe'))!
 	}
