@@ -48,3 +48,6 @@ GPU/driver enumeration, and `--json` for a support report. Each missing or misma
 prerequisite has a recovery action. Diagnostics do not repair caches or change
 the environment. Device enumeration does not validate hardware decoding or
 OpenCL interoperability. Python 3.9 or newer is required.
+
+Choose `--profile v3` for the pinned V3 compiler or `--profile release` for
+the released compiler when the project defines multiple profiles.
