@@ -156,7 +156,10 @@ def main():
             launcher.chmod(0o755)
             for program in ['examples', 'glfw_vulkan', 'widget_gallery', 'implot_dashboard']:
                 (package / (program + extension)).chmod(0o755)
-            run([str(launcher), '--help'], cwd, env, logs, 'launcher-help', args.timeout, 'Usage:')
+            # The compiled menu supports --help on both platforms. The Linux
+            # shell wrapper accepts example names only; exercise it below.
+            run([str(package / ('examples' + extension)), '--help'],
+                cwd, env, logs, 'launcher-help', args.timeout, 'Usage:')
             for example in ['glfw_vulkan', 'widget_gallery', 'implot_dashboard']:
                 env['VIMGUI_SMOKE_FRAMES'] = '660' if example == 'implot_dashboard' else '60'
                 run([str(launcher), example], cwd, env, logs, example, args.timeout)
