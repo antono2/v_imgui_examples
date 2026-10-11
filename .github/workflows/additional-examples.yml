@@ -27,22 +27,26 @@ jobs:
       GLFW_LIB: /usr/lib/x86_64-linux-gnu
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Resolve standard compatibility pins
+        id: compat
+        shell: bash
+        run: python scripts/compatibility.py --variant standard --github-output "$GITHUB_OUTPUT"
       - uses: ./.github/actions/setup-v
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
-          ref: v0.3.1-standard
+          ref: ${{ steps.compat.outputs.module_imgui }}
           path: build/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/vulkan
-          ref: v3.2.2
+          ref: ${{ steps.compat.outputs.module_vulkan }}
           path: build/modules/antono2/vulkan
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/glfw
-          ref: v2.0.1
+          ref: ${{ steps.compat.outputs.module_glfw }}
           path: build/modules/antono2/glfw
       - name: Verify the declared dependency graph
         shell: bash

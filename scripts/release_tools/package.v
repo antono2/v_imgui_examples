@@ -4,6 +4,11 @@ module release_tools
 
 import os
 import crypto.sha256
+import json2
+
+struct NativeCompatibility {
+	glfw string
+}
 
 const examples = ['glfw_vulkan', 'widget_gallery', 'implot_dashboard']
 
@@ -162,6 +167,7 @@ fn windows_os_library(name string) bool {
 }
 
 fn package_windows(root string, binaries string, imgui string, output string) ![]string {
+	compatibility := json2.decode[NativeCompatibility](os.read_file(os.join_path(root, 'compatibility.json'))!)!
 	for example in examples {
 		copy(os.join_path(binaries, example + '.exe'), os.join_path(output, example + '.exe'))!
 	}
@@ -189,7 +195,7 @@ fn package_windows(root string, binaries string, imgui string, output string) ![
 	notices := os.join_path(output, 'licenses')
 	collect_licenses(root, imgui, notices, false)!
 	mut glfw_license := ''
-	for file in os.walk_ext(os.join_path(imgui, 'build', 'shared-bundled-3.4'), 'LICENSE.md') {
+	for file in os.walk_ext(os.join_path(imgui, 'build', 'shared-bundled-${compatibility.glfw}'), 'LICENSE.md') {
 		if file.contains('glfw-src') {
 			glfw_license = file
 			break

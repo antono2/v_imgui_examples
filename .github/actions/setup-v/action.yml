@@ -3,20 +3,24 @@ description: Build the V compiler and compatibility compiler used by the example
 runs:
   using: composite
   steps:
+    - name: Resolve tested compiler pins
+      id: compat
+      shell: bash
+      run: python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         repository: vlang/v
-        ref: 1f128c94619fb6e4863c5f81883e1b860405c8fa
+        ref: ${{ steps.compat.outputs.v }}
         path: toolchain/v
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         repository: vlang/vc
-        ref: 4a1ba4d772f19c2752c9850d3b5421c71f54a4d6
+        ref: ${{ steps.compat.outputs.vc }}
         path: toolchain/v/vc
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         repository: vlang/tccbin
-        ref: d6e7ac1b1bcc98aed734a6ecbfa8509f24606c74
+        ref: ${{ steps.compat.outputs.tcc }}
         path: toolchain/v/thirdparty/tcc
     - if: runner.os != 'Windows'
       shell: bash

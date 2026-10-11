@@ -16,49 +16,52 @@ jobs:
       matrix:
         os: [ubuntu-24.04, windows-2022]
         variant: [docking, standard]
-        include:
-          - variant: docking
-            imgui-ref: v0.3.1
-          - variant: standard
-            imgui-ref: v0.3.1-standard
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
       VMODULES: ${{ github.workspace }}/build/modules
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Resolve tested compatibility manifest
+        id: compat
+        shell: bash
+        run: |
+          python scripts/test_distribution.py
+          python scripts/compatibility.py --github-output "$GITHUB_OUTPUT" --variant "${{ matrix.variant }}"
       - uses: ./.github/actions/setup-v
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: antono2/imgui
-          ref: ${{ matrix.imgui-ref }}
+          ref: ${{ steps.compat.outputs.module_imgui }}
           path: build/modules/antono2/imgui
           submodules: recursive
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: antono2/vulkan
-          ref: v3.2.2
+          ref: ${{ steps.compat.outputs.module_vulkan }}
           path: build/modules/antono2/vulkan
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: antono2/glfw
-          ref: v2.0.1
+          ref: ${{ steps.compat.outputs.module_glfw }}
           path: build/modules/antono2/glfw
       - name: Verify the declared dependency graph
         shell: bash
-        run: v run scripts/check_installed_deps.vsh ${{ matrix.variant == 'standard' && '--tag-suffix antono2.imgui=-standard' || '' }}
+        run: |
+          v run scripts/check_installed_deps.vsh ${{ matrix.variant == 'standard' && '--tag-suffix antono2.imgui=-standard' || '' }}
+          python scripts/compatibility.py --variant "${{ matrix.variant }}" --modules build/modules
       - name: Install Linux build and rendering tools
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers ripgrep gdb xvfb patchelf zip xdotool openbox x11-utils x11-xserver-utils wmctrl
       - name: Install Windows Vulkan build tools
         if: runner.os == 'Windows'
         shell: bash
-        run: v run build/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh 1.4.309.0 v1.2
+        run: v run build/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh ${{ steps.compat.outputs.ci_sdk }} ${{ steps.compat.outputs.ci_runtime }}
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         if: runner.os == 'Windows'
         with:
           repository: zeux/volk
-          ref: 58689c063427f5bad4f133625049b1a3c5dd8287
+          ref: ${{ steps.compat.outputs.volk }}
           path: build/volk
       - name: Install Windows Volk header
         if: runner.os == 'Windows'
@@ -149,3 +152,73 @@ jobs:
             build/android-touch-${{ matrix.abi }}/vimgui-demo-unsigned.apk
             build/android-touch-${{ matrix.abi }}/licenses
           if-no-files-found: error
+
+  package-consumer:
+    name: Package consumer (${{ matrix.platform }}, ${{ matrix.variant }})
+    needs: desktop
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+        variant: [docking, standard]
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+          - os: windows-2022
+            platform: windows
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          sparse-checkout: |
+            scripts/test_release_package.py
+            scripts/compatibility.py
+            compatibility.json
+            v.mod
+          sparse-checkout-cone-mode: false
+      - name: Resolve consumer runtime pins
+        id: compat
+        shell: bash
+        run: python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: desktop-${{ runner.os }}-${{ matrix.variant }}
+          path: downloads
+      - name: Install Windows software Vulkan driver
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 https://raw.githubusercontent.com/antono2/vulkan/refs/tags/${{ steps.compat.outputs.module_vulkan }}/.github/scripts/setup-vulkan-ci.sh --output "$RUNNER_TEMP/setup-vulkan-ci.sh"
+          bash "$RUNNER_TEMP/setup-vulkan-ci.sh" ${{ steps.compat.outputs.ci_sdk }} ${{ steps.compat.outputs.ci_runtime }}
+      - name: Test Windows package with runtime-only environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $Archives = @(Get-ChildItem downloads -Filter '*.zip')
+          if ($Archives.Count -ne 1) { throw 'Expected exactly one package archive' }
+          python scripts/test_release_package.py $Archives[0].FullName --project imgui  --logs package-smoke-logs
+          if ($LASTEXITCODE -ne 0) { throw 'Windows package consumer failed' }
+      - name: Test Linux package in a runtime-only Ubuntu container
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p package-smoke-logs
+          docker run --rm --init -v "$PWD:/consumer" -w /consumer ubuntu:24.04 bash -euxc '
+            apt-get update
+            apt-get install -y --no-install-recommends python3 xvfb xauth mesa-vulkan-drivers libvulkan1 vulkan-validationlayers
+            if command -v v; then exit 1; fi
+            if command -v cmake; then exit 1; fi
+            if command -v cc; then exit 1; fi
+            if dpkg-query -W libglfw3 2>/dev/null; then exit 1; fi
+            mapfile -t archives < <(find downloads -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" \))
+            test "${#archives[@]}" -eq 1
+            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout --kill-after=10s 8m xvfb-run -a python3 -u scripts/test_release_package.py "${archives[0]}" --project imgui  --logs package-smoke-logs
+          '
+      - name: Preserve consumer logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: consumer-${{ matrix.platform }}-${{ matrix.variant }}
+          path: package-smoke-logs
+          if-no-files-found: warn

@@ -1,0 +1,87 @@
+name: Published desktop package consumers
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Published release tag, or latest'
+        default: latest
+        type: string
+permissions:
+  contents: read
+jobs:
+  package-consumer:
+    name: Package consumer (${{ matrix.platform }}, ${{ matrix.variant }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+        variant: [docking, standard]
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+          - os: windows-2022
+            platform: windows
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          sparse-checkout: |
+            scripts/test_release_package.py
+            scripts/compatibility.py
+            compatibility.json
+            v.mod
+          sparse-checkout-cone-mode: false
+      - name: Resolve consumer runtime pins
+        id: compat
+        shell: bash
+        run: python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+      - name: Download published package and checksums
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name || 'latest' }}
+          ASSET_PATTERN: 'v-imgui-examples-${{ matrix.platform }}-x64-${{ matrix.variant }}.zip'
+        run: |
+          args=()
+          if [[ "$RELEASE_TAG" != latest ]]; then args+=("$RELEASE_TAG"); fi
+          gh release download "${args[@]}" --repo antono2/v_imgui_examples --pattern "$ASSET_PATTERN" --pattern SHA256SUMS.txt --dir downloads
+      - name: Install Windows software Vulkan driver
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 https://raw.githubusercontent.com/antono2/vulkan/refs/tags/${{ steps.compat.outputs.module_vulkan }}/.github/scripts/setup-vulkan-ci.sh --output "$RUNNER_TEMP/setup-vulkan-ci.sh"
+          bash "$RUNNER_TEMP/setup-vulkan-ci.sh" ${{ steps.compat.outputs.ci_sdk }} ${{ steps.compat.outputs.ci_runtime }}
+      - name: Test Windows package with runtime-only environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $Archives = @(Get-ChildItem downloads -Filter '*.zip')
+          if ($Archives.Count -ne 1) { throw 'Expected exactly one package archive' }
+          python scripts/test_release_package.py $Archives[0].FullName --project imgui --checksums downloads/SHA256SUMS.txt --logs package-smoke-logs
+          if ($LASTEXITCODE -ne 0) { throw 'Windows package consumer failed' }
+      - name: Test Linux package in a runtime-only Ubuntu container
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p package-smoke-logs
+          docker run --rm --init -v "$PWD:/consumer" -w /consumer ubuntu:24.04 bash -euxc '
+            apt-get update
+            apt-get install -y --no-install-recommends python3 xvfb xauth mesa-vulkan-drivers libvulkan1 vulkan-validationlayers
+            if command -v v; then exit 1; fi
+            if command -v cmake; then exit 1; fi
+            if command -v cc; then exit 1; fi
+            if dpkg-query -W libglfw3 2>/dev/null; then exit 1; fi
+            mapfile -t archives < <(find downloads -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" \))
+            test "${#archives[@]}" -eq 1
+            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout --kill-after=10s 8m xvfb-run -a python3 -u scripts/test_release_package.py "${archives[0]}" --project imgui --checksums downloads/SHA256SUMS.txt --logs package-smoke-logs
+          '
+      - name: Preserve consumer logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: consumer-${{ matrix.platform }}-${{ matrix.variant }}
+          path: package-smoke-logs
+          if-no-files-found: warn
