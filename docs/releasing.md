@@ -4,6 +4,13 @@ Run the **Portable release packages** workflow on the intended examples commit.
 It builds both pinned ImGui variants, bundles all non-OS desktop libraries,
 audits runtime dependencies, renders the Linux bundles and builds unsigned
 Android inputs for three ABIs. Download the artifacts from that exact run.
+The separate package consumers must also pass: they download the resulting ZIPs
+onto other runners and launch them in isolated runtime environments. Compiler,
+module and native pins live in [compatibility.json](../compatibility.json); see
+[compatibility and consumer validation](compatibility.md) for upgrade checks.
+After publication, the published-package workflow verifies the downloaded assets
+against their release checksums and runs the same consumers.
+
 Retain the run URL and source commits in release notes. Do not publish CI debug
 APKs as release updates: their signing keys are temporary.
 

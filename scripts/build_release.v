@@ -6,6 +6,11 @@ module main
 
 import os
 import release_tools
+import json
+
+struct Compatibility {
+	glfw string
+}
 
 fn find_file(root string, names []string, containing string) !string {
 	mut files := os.walk_ext(root, '')
@@ -31,6 +36,7 @@ fn run() ! {
 	}
 	variant := os.args[1]
 	root := os.dir(os.dir(@FILE))
+	compatibility := json.decode(Compatibility, os.read_file(os.join_path(root, 'compatibility.json'))!)!
 	imgui := if os.getenv('IMGUI_DIR') != '' {
 		os.getenv('IMGUI_DIR')
 	} else {
@@ -50,8 +56,8 @@ fn run() ! {
 	mut native_options := ['run', os.join_path(imgui, 'build_vimgui.vsh'), '--linkage', 'shared']
 	mut native_directory := ''
 	$if windows {
-		native_options << ['--glfw', 'bundled', '--glfw-version', '3.4']
-		native_directory = os.join_path(imgui, 'build', 'shared-bundled-3.4')
+		native_options << ['--glfw', 'bundled', '--glfw-version', compatibility.glfw]
+		native_directory = os.join_path(imgui, 'build', 'shared-bundled-${compatibility.glfw}')
 		if os.getenv('VCToolsRedistDir') == '' {
 			return error('Load scripts/setup_windows_build.ps1 before running the builder')
 		}
