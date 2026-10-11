@@ -38,3 +38,13 @@ python scripts/test_release_package.py PACKAGE.zip --project imgui --checksums S
 
 On Linux, run inside `xvfb-run -a` when there is no desktop session. Both published
 Windows v1.0.1 variants passed this test on the audit machine's physical GPU.
+
+## Read-only diagnostics
+
+Run `python scripts/doctor.py --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY`
+to report the selected compiler, build tools and installed dependency versions.
+Use `--sdk SDK_DIRECTORY` when VULKAN_SDK is not set, `--runtime` for optional
+GPU/driver enumeration, and `--json` for a support report. Each missing or mismatched
+prerequisite has a recovery action. Diagnostics do not repair caches or change
+the environment. Device enumeration does not validate hardware decoding or
+OpenCL interoperability. Python 3.9 or newer is required.
