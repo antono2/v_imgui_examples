@@ -31,7 +31,9 @@ jobs:
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
-        run: python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+        run: |
+          python source/demo/scripts/test_doctor.py
+          python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
@@ -106,7 +108,9 @@ jobs:
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
-        run: python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+        run: |
+          python source/demo/scripts/test_doctor.py
+          python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
@@ -231,7 +235,9 @@ jobs:
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
-        run: python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT" --compiler v3
+        run: |
+          python source/demo/scripts/test_doctor.py
+          python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT" --compiler v3
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
