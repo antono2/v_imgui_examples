@@ -67,7 +67,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p package-smoke-logs
-          docker run --rm -v "$PWD:/consumer" -w /consumer ubuntu:24.04 bash -euc '
+          docker run --rm --init -v "$PWD:/consumer" -w /consumer ubuntu:24.04 bash -euxc '
             apt-get update
             apt-get install -y --no-install-recommends python3 xvfb xauth mesa-vulkan-drivers libvulkan1 vulkan-validationlayers
             if command -v v; then exit 1; fi
@@ -76,7 +76,7 @@ jobs:
             if dpkg-query -W libglfw3 2>/dev/null; then exit 1; fi
             mapfile -t archives < <(find downloads -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" \))
             test "${#archives[@]}" -eq 1
-            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation xvfb-run -a python3 scripts/test_release_package.py "${archives[0]}" --project imgui --checksums downloads/SHA256SUMS.txt --logs package-smoke-logs
+            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout --kill-after=10s 8m xvfb-run -a python3 -u scripts/test_release_package.py "${archives[0]}" --project imgui --checksums downloads/SHA256SUMS.txt --logs package-smoke-logs
           '
       - name: Preserve consumer logs
         if: always()
