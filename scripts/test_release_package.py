@@ -22,8 +22,11 @@ def verify_checksum(archive, checksums):
             entries.append(match[1].lower())
     if len(entries) != 1:
         raise ValueError(f'Expected exactly one checksum for {archive.name}')
+    digest = hashlib.sha256()
     with archive.open('rb') as stream:
-        actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(block)
+    actual = digest.hexdigest()
     if actual != entries[0]:
         raise ValueError(f'Checksum mismatch: {archive.name}')
 
@@ -54,7 +57,8 @@ def extract(archive, destination):
                 safe_name(member.name)
                 if not (member.isfile() or member.isdir()):
                     raise ValueError(f'Unsupported archive entry: {member.name}')
-            package.extractall(destination, members=members, filter='data')
+            # Preflight above rejects traversal and every link/special entry.
+            package.extractall(destination, members=members)
 
 
 def runtime_environment(home):
