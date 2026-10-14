@@ -49,5 +49,15 @@ prerequisite has a recovery action. Diagnostics do not repair caches or change
 the environment. Device enumeration does not validate hardware decoding or
 OpenCL interoperability. Python 3.9 or newer is required.
 
-Choose `--profile v3` for the pinned V3 compiler or `--profile release` for
-the released compiler when the project defines multiple profiles.
+For `doctor.py`, the default `--profile stable` checks the exact compiler commit
+stored in `compatibility.json` as `v`; `--profile v3` checks the `v3_v` commit.
+Use a compiler built at the selected revision for these diagnostics.
+
+The separate pin resolver uses `--compiler stable` or `--compiler v3`, together
+with `--platform linux` or `--platform windows` and `--variant docking` or
+`--variant standard`. For example:
+
+```sh
+python scripts/compatibility.py --compiler v3 --platform linux --variant standard
+python scripts/doctor.py --profile v3 --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY
+```
