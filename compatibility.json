@@ -7,7 +7,7 @@
   "glfw": "3.4",
   "ci_sdk": "1.4.309.0",
   "ci_runtime": "v1.2",
-  "imgui_standard": "v0.3.1-standard",
+  "imgui_standard": "v0.4.0-standard",
   "modules": {
     "imgui": "v0.3.1",
     "vulkan": "v3.2.2",

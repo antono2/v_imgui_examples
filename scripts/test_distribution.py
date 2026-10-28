@@ -66,6 +66,21 @@ class DistributionTests(unittest.TestCase):
             self.assertEqual(resolve(root, 'windows', 'standard')['module_imgui'], manifest['imgui_standard'])
             self.assertEqual(resolve(root, 'linux', compiler='v3')['v'], manifest['v3_v'])
 
+    def test_standard_can_advance_without_changing_docking(self):
+        source = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shutil.copyfile(source / 'v.mod', root / 'v.mod')
+            manifest = json.loads((source / 'compatibility.json').read_text())
+            manifest['imgui_standard'] = 'v99.0.0-standard'
+            (root / 'compatibility.json').write_text(json.dumps(manifest))
+            self.assertEqual(resolve(root, 'linux', 'standard')['module_imgui'], 'v99.0.0-standard')
+            self.assertEqual(resolve(root, 'linux')['module_imgui'], manifest['modules']['imgui'])
+            manifest['imgui_standard'] = 'master'
+            (root / 'compatibility.json').write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'exact standard release'):
+                resolve(root, 'linux', 'standard')
+
 
 if __name__ == '__main__':
     unittest.main()

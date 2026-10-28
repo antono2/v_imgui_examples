@@ -33,6 +33,8 @@ def resolve(root, platform, variant='docking', compiler='stable'):
         if 'linux_tcc' in pins:
             outputs['tcc'] = pins['linux_tcc']
     if variant == 'standard' and 'module_imgui' in outputs:
+        if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+-standard', pins.get('imgui_standard', '')):
+            raise ValueError('imgui_standard must be an exact standard release tag')
         outputs['module_imgui'] = pins['imgui_standard']
     if compiler == 'v3':
         outputs['v'] = pins['v3_v']

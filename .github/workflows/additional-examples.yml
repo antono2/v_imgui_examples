@@ -50,7 +50,9 @@ jobs:
           path: build/modules/antono2/glfw
       - name: Verify the declared dependency graph
         shell: bash
-        run: v run scripts/check_installed_deps.vsh --tag-suffix antono2.imgui=-standard
+        run: |
+          python scripts/test_installed_deps.py
+          v run scripts/check_installed_deps.vsh --tag-override 'antono2.imgui=${{ steps.compat.outputs.module_imgui }}'
       - name: Install graphics dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb
       - name: Build native library
