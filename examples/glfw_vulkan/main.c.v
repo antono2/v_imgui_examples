@@ -302,9 +302,11 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 	mut create_info := vk.InstanceCreateInfo{}
 	// Enumerate available extensions
 	mut ie_properties_count := u32(0)
-	// Keep concrete pointer types: V3 otherwise copies mut voidptr arguments (vlang/v#31480).
-	mut n := unsafe { &vk.ExtensionProperties(nil) }
-	res = vk.enumerate_instance_extension_properties(unsafe { nil }, &ie_properties_count, mut n)
+	// Keep concrete pointer types for older V3 compilers that copied mutable
+	// voidptr arguments instead of using the original storage (vlang/v#31480).
+	mut no_extension_properties := unsafe { &vk.ExtensionProperties(nil) }
+	res = vk.enumerate_instance_extension_properties(unsafe { nil }, &ie_properties_count, mut
+		no_extension_properties)
 	check_vk_result(res)
 	mut ie_properties := []vk.ExtensionProperties{len: int(ie_properties_count)}
 	mut ie_properties_data := unsafe { &vk.ExtensionProperties(ie_properties.data) }
@@ -345,7 +347,8 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 
 	// Enumerate physical device extension
 	mut de_properties_count := u32(0)
-	res = vk.enumerate_device_extension_properties(app.physical_device, unsafe { nil }, &de_properties_count, mut n)
+	res = vk.enumerate_device_extension_properties(app.physical_device, unsafe { nil },
+		&de_properties_count, mut no_extension_properties)
 	check_vk_result(res)
 	mut de_properties := []vk.ExtensionProperties{len: int(de_properties_count)}
 	mut de_properties_data := unsafe { &vk.ExtensionProperties(de_properties.data) }
