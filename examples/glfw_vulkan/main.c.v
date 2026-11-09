@@ -4,6 +4,7 @@ module glfw_vulkan
 
 import antono2.vulkan as vk
 import antono2.glfw
+import math
 import antono2.imgui
 import antono2.imgui.impl_vulkan
 import antono2.imgui.impl_glfw
@@ -30,12 +31,27 @@ pub fn main() {
 
 pub struct Options {
 pub:
-	title      string
-	initialize fn (voidptr) = no_lifecycle_hook
-	shutdown   fn (voidptr) = no_lifecycle_hook
+	title         string
+	fit_work_area bool
+	dockspace     bool = true
+	prepare       fn (mut App, voidptr) = no_prepare_hook
+	initialize    fn (voidptr) = no_lifecycle_hook
+	shutdown      fn (voidptr) = no_lifecycle_hook
 }
 
 fn no_lifecycle_hook(_ voidptr) {}
+
+fn no_prepare_hook(mut _ App, _ voidptr) {}
+
+// GLFW window coordinates already include Retina backing-scale handling.
+pub fn content_scale(window &glfw.Window) f32 {
+	$if macos {
+		return 1
+	}
+	mut x, mut y := f32(1), f32(1)
+	glfw.get_window_content_scale(window, &x, &y)
+	return f32(math.max(f32(0.5), math.min(f32(4), math.max(x, y))))
+}
 
 pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	// The binding owns Volk initialization and TinyCC's Linux loader isolation.
@@ -54,8 +70,35 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 	// Borderless fullscreen should remain available when switching applications.
 	glfw.window_hint(glfw.auto_iconify, 0)
 
-	main_scale := f32(1.0)
-	window := glfw.create_windowed(i32(1200 * main_scale), i32(800 * main_scale), options.title) or {
+	mut initial_width, mut initial_height := i32(1200), i32(800)
+	if options.fit_work_area {
+		monitor := glfw.get_primary_monitor()
+		mut sx, mut sy := f32(1), f32(1)
+		glfw.get_monitor_content_scale(monitor, &sx, &sy)
+		$if macos {
+			sx = 1
+			sy = 1
+		}
+		mut x, mut y, mut w, mut h := i32(0), i32(0), i32(1200), i32(800)
+		glfw.get_monitor_workarea(monitor, &x, &y, &w, &h)
+		monitor_scale := if sx > sy { sx } else { sy }
+		initial_width = i32(f32(1200) * monitor_scale)
+		initial_height = i32(f32(760) * monitor_scale)
+		// Keep integer window bounds explicit for the older pinned V3 frontend.
+		if initial_width > w - 80 {
+			initial_width = w - 80
+		}
+		if initial_height > h - 80 {
+			initial_height = h - 80
+		}
+		if initial_width < 320 {
+			initial_width = 320
+		}
+		if initial_height < 240 {
+			initial_height = 240
+		}
+	}
+	window := glfw.create_windowed(initial_width, initial_height, options.title) or {
 		panic(err)
 	}
 
@@ -80,7 +123,7 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		panic('GLFW: Vulkan Not Supported')
 	}
 
-	mut app := App{ native_window: voidptr(window) }
+	mut app := App{ native_window: voidptr(window), dockspace_enabled: options.dockspace }
 
 	mut extensions := []&char{}
 	mut extensions_count := u32(0)
@@ -112,8 +155,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 	// Setup scaling
 	mut style := imgui.get_style()
-	// Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
-	imgui.style_scale_all_sizes(style, main_scale)
+	// Existing examples keep their default scale; prepare can apply per-frame DPI styling.
+	imgui.style_scale_all_sizes(style, 1)
 
 	// Setup Platform/Renderer backends
 	impl_glfw.init_for_vulkan(window, true)
@@ -176,6 +219,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 			impl_glfw.sleep(10)
 			continue
 		}
+
+		options.prepare(mut app, state)
 
 		// Start the Dear ImGui frame
 		impl_vulkan.new_frame()
@@ -253,7 +298,7 @@ pub mut:
 	swapchain_rebuild     bool
 	swapchain_image_usage vk.ImageUsageFlags = vk.ImageUsageFlags(vk.ImageUsageFlagBits.color_attachment)
 	docking_available     bool
-	dockspace_enabled     bool         = true
+	dockspace_enabled     bool = true
 	clear_color           imgui.ImVec4 = imgui.ImVec4{
 		x: 0.45
 		y: 0.55
@@ -305,8 +350,7 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 	// Keep concrete pointer types for older V3 compilers that copied mutable
 	// voidptr arguments instead of using the original storage (vlang/v#31480).
 	mut no_extension_properties := unsafe { &vk.ExtensionProperties(nil) }
-	res = vk.enumerate_instance_extension_properties(unsafe { nil }, &ie_properties_count, mut
-		no_extension_properties)
+	res = vk.enumerate_instance_extension_properties(unsafe { nil }, &ie_properties_count, mut no_extension_properties)
 	check_vk_result(res)
 	mut ie_properties := []vk.ExtensionProperties{len: int(ie_properties_count)}
 	mut ie_properties_data := unsafe { &vk.ExtensionProperties(ie_properties.data) }
@@ -347,8 +391,7 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 
 	// Enumerate physical device extension
 	mut de_properties_count := u32(0)
-	res = vk.enumerate_device_extension_properties(app.physical_device, unsafe { nil },
-		&de_properties_count, mut no_extension_properties)
+	res = vk.enumerate_device_extension_properties(app.physical_device, unsafe { nil }, &de_properties_count, mut no_extension_properties)
 	check_vk_result(res)
 	mut de_properties := []vk.ExtensionProperties{len: int(de_properties_count)}
 	mut de_properties_data := unsafe { &vk.ExtensionProperties(de_properties.data) }
@@ -381,11 +424,11 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 	// sampled-image descriptors for each texture registered by the application.
 	mut pool_sizes := []vk.DescriptorPoolSize{}
 	pool_sizes << vk.DescriptorPoolSize{
-		type:            vk.DescriptorType.sampled_image
+		type: vk.DescriptorType.sampled_image
 		descriptorCount: u32(8)
 	}
 	pool_sizes << vk.DescriptorPoolSize{
-		type:            vk.DescriptorType.sampler
+		type: vk.DescriptorType.sampler
 		descriptorCount: u32(2)
 	}
 	mut pool_info := vk.DescriptorPoolCreateInfo{}

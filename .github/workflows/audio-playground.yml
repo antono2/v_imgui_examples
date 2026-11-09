@@ -1,0 +1,60 @@
+name: Audio playground
+on:
+  push:
+    branches: [master, audio-playground]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: audio-playground-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env:
+      V_C_ERROR_BUG_REPORT_DISABLED: '1'
+      V_MACOS_V3_NO_FALLBACK: '1'
+      VJOBS: '2'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake pkg-config libglfw3-dev mesa-vulkan-drivers vulkan-validationlayers xvfb xdotool x11-xserver-utils imagemagick ffmpeg pulseaudio
+      - name: macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install cmake pkg-config glfw
+      - name: Windows compiler
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $cc = (Get-Command x86_64-w64-mingw32-gcc.exe -ErrorAction Stop).Source
+          $cxx = (Get-Command x86_64-w64-mingw32-g++.exe -ErrorAction Stop).Source
+          $directory = Split-Path $cc
+          "ANTONO2_AUDIO_V_CC=$cc" >> $env:GITHUB_ENV
+          "ANTONO2_AUDIO_AR=$(Join-Path $directory 'ar.exe')" >> $env:GITHUB_ENV
+          "CXX=$cxx" >> $env:GITHUB_ENV
+          $directory >> $env:GITHUB_PATH
+      - name: Build native audio, ImGui example and state tests
+        run: python scripts/build_audio_playground.py --test-model
+      - name: Actual input at 100–200 percent and compact layouts
+        if: runner.os == 'Linux'
+        run: python3 tests/desktop/audio_input.py
+      - name: Native stereo audio loopback
+        if: runner.os == 'Linux'
+        run: python3 tests/desktop/audio_output.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: audio-validation-${{ runner.os }}
+          path: build/audio-validation/
+          if-no-files-found: ignore

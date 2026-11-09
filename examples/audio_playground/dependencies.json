@@ -1,0 +1,10 @@
+{
+  "v": "1f128c94619fb6e4863c5f81883e1b860405c8fa",
+  "vc": "4a1ba4d772f19c2752c9850d3b5421c71f54a4d6",
+  "modules": {
+    "imgui": "2adf2ab488e28dc75aebd134b866f13dcc69a6dc",
+    "glfw": "debb2b8163230b43a2b17354e3e7ed1089ea1671",
+    "vulkan": "2415462725771894cdc82505730fd59692b858fa",
+    "audio": "2276e329c0c3c9f2e3e3253e45ec687bd204f6cc"
+  }
+}
