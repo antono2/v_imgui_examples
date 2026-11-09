@@ -141,7 +141,7 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 
 	// Setup scaling
 	mut style := imgui.get_style()
-	// Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+	// Existing examples keep their default scale; prepare can apply per-frame DPI styling.
 	imgui.style_scale_all_sizes(style, 1)
 
 	// Setup Platform/Renderer backends

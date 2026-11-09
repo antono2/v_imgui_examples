@@ -156,6 +156,11 @@ def check(dpi, env):
             else: raise AssertionError('Play is unreachable with Tab')
             xdo('key', 'space')
             state(lambda s: s['playing'], 'Space activates focused Play')
+            time.sleep(.1)
+            assert wait(snapshot, 'focus after label change')['items']['play']['focused']
+            xdo('key', 'space')
+            time.sleep(.1)
+            assert wait(snapshot, 'keyboard restart')['state']['playing']
             xdo('key', 'Escape')
             state(lambda s: not s['playing'], 'Escape after native keyboard activation')
             xdo('key', 'p')
@@ -192,10 +197,23 @@ def check(dpi, env):
             reveal('stop')
             click('stop')
             state(lambda s: not s['playing'], 'stop after resize')
+            if dpi == 192:
+                xdo('windowsize', '--sync', window, 560, 700)
+                wait(lambda: (s := snapshot()) and s['width'] == 560, 'narrow window')
+                top()
+                current = wait(snapshot, 'wrapped buttons')
+                assert current['items']['reset']['y'] > current['items']['play']['y']
+                capture('narrow-wrapped')
+                reveal('right')
+                click('right')
+                state(lambda s: s['x'] == 4, 'wrapped preset')
+                reveal('reset')
+                click('reset')
+                state(lambda s: s['x'] == -3 and abs(s['gain'] - .1) < .001, 'wrapped reset')
             xdo('key', 'F12')
             assert app.wait(timeout=10) == 0, (folder / 'window.log').read_text()
             errors = (folder / 'window.log').read_text()
-            assert 'Validation Error' not in errors, errors
+            assert not any(word in errors.lower() for word in ['validation error', 'vuid-', 'segmentation', 'fatal']), errors
             return dict(dpi=dpi, scale=first['scale'], initial=[first['width'], first['height']],
                         compact=[960, 700], passed=['work-area fit', 'presets', 'button edges',
                         'release cancellation', 'volume', 'mute restore', 'drag', 'reset',

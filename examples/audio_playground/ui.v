@@ -119,7 +119,9 @@ fn (mut d Demo) draw_controls() {
 		} else {
 			used = 0
 		}
-		if imgui.button(label.str, vec(width, 0)) {
+		// Keep keyboard focus when Play/Restart or Mute/Unmute changes its label.
+		widget_label := label + '###audio-action-${i}'
+		if imgui.button(widget_label.str, vec(width, 0)) {
 			d.apply(match i {
 				0 { model.Action.play }
 				1 { model.Action.stop }

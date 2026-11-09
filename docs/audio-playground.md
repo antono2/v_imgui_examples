@@ -23,6 +23,7 @@ Prerequisites:
   requires a Vulkan-capable graphics driver.
 
 Pins are in [`dependencies.json`](../examples/audio_playground/dependencies.json).
+CMake receives a headers-only Vulkan package; a Vulkan SDK is not needed to compile.
 The builder bootstraps the explicit V1 compatibility compiler from pinned V/VC
 sources, uses the garbage collector for the long-running UI and builds native
 ImGui and miniaudio libraries. It uses Vulkan headers from the pinned binding.
@@ -63,6 +64,9 @@ python3 scripts/build_audio_playground.py --test-model
 python3 tests/desktop/audio_input.py
 python3 tests/desktop/audio_output.py
 ```
+
+The build check also loads the executable with `--help`, checking runtime library
+discovery without opening a window or an audio device.
 
 The input test needs Xvfb, xrdb, xdotool, ImageMagick and a Vulkan driver (Lavapipe
 is supported). It creates a separate **1920×1080** display and tests 100%, 109%,

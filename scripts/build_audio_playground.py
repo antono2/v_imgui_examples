@@ -23,10 +23,15 @@ args = parser.parse_args()
 windows = os.name == 'nt'
 cc = os.environ.get('ANTONO2_AUDIO_V_CC') or ('gcc' if windows else 'cc')
 cxx = os.environ.get('CXX') or ('g++' if windows else 'c++')
-for tool in ['git', 'cmake', cc, cxx]:
+required = ['git', 'cmake', cc, cxx, os.environ.get('ANTONO2_AUDIO_AR', 'ar')]
+required += ['ninja'] if windows else ['pkg-config']
+for tool in required:
     if not shutil.which(tool): raise SystemExit(f'Missing {tool}; see docs/audio-playground.md.')
+if not windows:
+    if subprocess.run(['pkg-config', '--exists', 'glfw3']).returncode:
+        raise SystemExit('Missing GLFW development package; see docs/audio-playground.md.')
 if args.check:
-    print('Build tools found. Linux/macOS also need the GLFW development package; see docs/audio-playground.md.')
+    print('Build prerequisites found. Running also requires a Vulkan-capable display/driver.')
     raise SystemExit(0)
 
 env = dict(os.environ, V_C_ERROR_BUG_REPORT_DISABLED='1', V_MACOS_V3_NO_FALLBACK='1')
@@ -100,21 +105,28 @@ build_env = dict(env, VMODULES=str(modules), ANTONO2_AUDIO_V_CC=cc,
                  ANTONO2_AUDIO_CC=cc, ANTONO2_AUDIO_AR=os.environ.get('ANTONO2_AUDIO_AR', 'ar'))
 if windows:
     header = next((native / '_deps').rglob('include/GLFW/glfw3.h'))
-    glfw_lib = next((native / '_deps').rglob('libglfw3.dll.a'))
-    build_env.update(GLFW_INCLUDE=str(header.parents[1]), GLFW_LIB=str(glfw_lib.parent))
+    imports = [p for p in (native / '_deps').rglob('*glfw3*.a')
+               if p.name in ('libglfw3dll.a', 'libglfw3.dll.a', 'glfw3dll.a')]
+    if len(imports) != 1:
+        raise RuntimeError(f'Expected one bundled GLFW import library, found {imports}')
+    # The V GLFW binding links -lglfw3; upstream names its MinGW import archive
+    # libglfw3dll.a. Keep an alias in our build directory without changing either.
+    libraries = root / 'build/audio/windows-libs'
+    libraries.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(imports[0], libraries / 'libglfw3.a')
+    build_env.update(GLFW_INCLUDE=str(header.parents[1]), GLFW_LIB=str(libraries))
 else:
-    prefix = '/usr'
-    if sys.platform == 'darwin':
-        prefix = subprocess.check_output(['brew', '--prefix', 'glfw'], text=True).strip()
-    build_env.setdefault('GLFW_INCLUDE', prefix + '/include')
+    include = subprocess.check_output(['pkg-config', '--variable=includedir', 'glfw3'], text=True).strip()
     library = subprocess.check_output(['pkg-config', '--variable=libdir', 'glfw3'], text=True).strip()
-    build_env.setdefault('GLFW_LIB', library)
+    build_env.update(GLFW_INCLUDE=include, GLFW_LIB=library)
 
 run([compiler, '-cc', cc, '-gc', 'none', 'run', audio / 'scripts/build_native_audio.vsh'], child_env=build_env)
 output = root / 'build' / ('audio_playground.exe' if windows else 'audio_playground')
 output.parent.mkdir(exist_ok=True)
 staging = output.with_name('audio_playground.building' + ('.exe' if windows else ''))
 link_flags = ['-ldflags', '-lm'] if sys.platform.startswith('linux') else []
+if sys.platform == 'darwin':
+    link_flags = ['-ldflags', '-Wl,-rpath,' + str(imgui / 'lib')]
 run([compiler, '-no-memory-limit', '-gc', 'boehm', '-d', 'use_bundled_libgc', '-cc', cc, *link_flags,
      '-path', str(modules / 'antono2') + '|@vlib|@vmodules', '-o', staging,
      root / 'examples/audio_playground'], child_env=build_env)
@@ -127,6 +139,8 @@ if windows:
         dependency = compiler_dir / name
         if dependency.exists(): shutil.copy2(dependency, output.parent / name)
 if args.test_model:
+    # Loading the executable also checks shared-library/DLL discovery without a GPU.
+    run([output, '--help'], child_env=build_env)
     run([compiler, '-gc', 'boehm', '-d', 'use_bundled_libgc', '-cc', cc,
          root / 'examples/audio_playground/model/model_test.v'], child_env=build_env)
 print('Built ' + str(output))
