@@ -81,8 +81,8 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		}
 		mut x, mut y, mut w, mut h := i32(0), i32(0), i32(1200), i32(800)
 		glfw.get_monitor_workarea(monitor, &x, &y, &w, &h)
-		initial_width = i32(math.max(f32(320), math.min(1200 * math.max(sx, sy), f32(w - 80))))
-		initial_height = i32(math.max(f32(240), math.min(760 * math.max(sx, sy), f32(h - 80))))
+		initial_width = i32(math.max(f32(320), math.min(f32(1200) * math.max(sx, sy), f32(w - 80))))
+		initial_height = i32(math.max(f32(240), math.min(f32(760) * math.max(sx, sy), f32(h - 80))))
 	}
 	window := glfw.create_windowed(initial_width, initial_height, options.title) or {
 		panic(err)
