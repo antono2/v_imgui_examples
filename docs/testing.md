@@ -95,3 +95,7 @@ To run instrumentation against a signed release APK, set
 `VIMGUI_ANDROID_TEST_PASSWORD_FILE` before running
 `scripts/test_android_accessibility.sh`. A debug installation with a different
 certificate must be removed first; uninstalling it removes its saved demo data.
+
+## Audio playground
+
+See [audio validation](audio-playground.md#automated-validation) for isolated native input tests at 100–200% scaling on a 1080p display, compact-window scrolling, and real stereo audio loopback checks. The audio workflow builds Linux, macOS and Windows; physical-device presentation remains a separate check.

@@ -128,15 +128,30 @@ fn guided_main() ! {
 	interactive := os.args.len == 1
 	mut launch := false
 	if interactive {
-		println('V ImGui examples\n\n1. Widget gallery — controls, tables and popups (default)\n2. ImPlot dashboard — interactive plots\n3. GLFW/Vulkan — windows and backend demonstration\n4. Android touch and text — device app\nQ. Quit\n')
+		println('V ImGui examples\n\n1. Widget gallery — controls, tables and popups (default)\n2. ImPlot dashboard — interactive plots\n3. GLFW/Vulkan — windows and backend demonstration\n4. Android touch and text — device app\n5. Audio playground — spatial sound and native controls\nQ. Quit\n')
 		choice := (ask('Choose an example [1]: ')!).to_lower()
 		match choice {
-			'', '1' { example = 'widget_gallery' }
-			'2' { example = 'implot_dashboard' }
-			'3' { example = 'glfw_vulkan' }
-			'4' { example = 'android_touch' }
-			'q' { return }
-			else { return error('Choose 1, 2, 3, 4 or Q.') }
+			'', '1' {
+				example = 'widget_gallery'
+			}
+			'2' {
+				example = 'implot_dashboard'
+			}
+			'3' {
+				example = 'glfw_vulkan'
+			}
+			'4' {
+				example = 'android_touch'
+			}
+			'5' {
+				example = 'audio_playground'
+			}
+			'q' {
+				return
+			}
+			else {
+				return error('Choose 1, 2, 3, 4, 5 or Q.')
+			}
 		}
 		launch = true
 	}
@@ -151,7 +166,7 @@ fn guided_main() ! {
 			index++
 			example = os.args[index]
 		} else if arg in ['-h', '--help'] {
-			println('Usage: ./setup.vsh [--install|--check|--build-only] [--run] [--example glfw_vulkan|widget_gallery|implot_dashboard|android_touch]\nOn Windows: v run setup.vsh with the same options.\nNo arguments: guided setup, build and launch. Explicit flags skip menus; system installers may request administrator authorization. --check makes no changes.')
+			println('Usage: ./setup.vsh [--install|--check|--build-only] [--run] [--example glfw_vulkan|widget_gallery|implot_dashboard|android_touch|audio_playground]\nOn Windows: v run setup.vsh with the same options.\nNo arguments: guided setup, build and launch. Explicit flags skip menus; system installers may request administrator authorization. --check makes no changes.')
 			return
 		} else {
 			eprintln('Unknown or incomplete option: ${arg}')
@@ -159,11 +174,26 @@ fn guided_main() ! {
 		}
 		index++
 	}
-	if example !in ['glfw_vulkan', 'widget_gallery', 'implot_dashboard', 'android_touch'] {
+	if example !in ['glfw_vulkan', 'widget_gallery', 'implot_dashboard', 'android_touch',
+		'audio_playground'] {
 		return error('Unknown example: ${example}. Use --help for choices.')
 	}
 	if mode == '--check' && launch {
 		return error('--check cannot be combined with --run.')
+	}
+	if example == 'audio_playground' {
+		python := if os.exists_in_system_path('python3') { 'python3' } else { 'python' }
+		if !os.exists_in_system_path(python) {
+			return error('Install Python 3; see docs/audio-playground.md.')
+		}
+		if interactive && !confirm('Download pinned dependencies and build the audio playground? No system packages will be installed.')! {
+			return
+		}
+		flags := if mode == '--check' {
+			' --check'
+		} else if launch { ' --run' } else { '' }
+		run('${python} ${os.quoted_path(os.join_path(project_dir, 'scripts', 'build_audio_playground.py'))}${flags}')!
+		return
 	}
 	source := if example == 'glfw_vulkan' {
 		project_dir
@@ -193,10 +223,16 @@ fn guided_main() ! {
 				run(os.quoted_path(example_binary))!
 				return
 			}
-			'b' { mode = '--build-only' }
+			'b' {
+				mode = '--build-only'
+			}
 			's' {}
-			'q' { return }
-			else { return error('Choose Enter, b, s or q.') }
+			'q' {
+				return
+			}
+			else {
+				return error('Choose Enter, b, s or q.')
+			}
 		}
 	}
 	if example == 'android_touch' {

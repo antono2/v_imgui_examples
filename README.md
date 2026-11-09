@@ -12,6 +12,7 @@ reuses upstream's native Vulkan/Activity host and constructs its UI in V.
 | [GLFW/Vulkan](examples/glfw_vulkan/README.md) | Backend initialization, floating windows, docking | Desktop |
 | [Widget gallery](examples/widget_gallery/README.md) | Text buffers, controls, combos, tables, popups | Desktop |
 | [ImPlot dashboard](examples/implot_dashboard/README.md) | Lines, scatter plots, series selection, rolling history | Desktop |
+| [Audio playground](examples/audio_playground/README.md) | Native spatial audio, responsive ImGui controls, position and volume | Desktop source example |
 | [Touch and text](examples/android_touch/README.md) | Touch controls, IME selection, clipboard, scaling | Android |
 
 CI pins ImGui, GLFW, Vulkan and V revisions. Linux renders all desktop examples
@@ -32,9 +33,11 @@ want the Standard variant.
 - **Linux:** extract the ZIP and run `./run.sh` for the example menu.
 - **Android:** install the universal APK and open **V ImGui Touch Examples**.
 
-In each desktop example, **Escape** quits when a control is not using it to
+In the release desktop examples, **Escape** quits when a control is not using it to
 cancel an edit, drag, popup or navigation operation. **F11** toggles borderless
 fullscreen on the window's monitor; pressing it again restores the window.
+
+The audio playground is a source example with its own [build and test guide](docs/audio-playground.md). Escape stops audio in that example.
 
 ## Build from source
 
