@@ -81,8 +81,22 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		}
 		mut x, mut y, mut w, mut h := i32(0), i32(0), i32(1200), i32(800)
 		glfw.get_monitor_workarea(monitor, &x, &y, &w, &h)
-		initial_width = i32(math.max(f32(320), math.min(f32(1200) * math.max(sx, sy), f32(w - 80))))
-		initial_height = i32(math.max(f32(240), math.min(f32(760) * math.max(sx, sy), f32(h - 80))))
+		monitor_scale := if sx > sy { sx } else { sy }
+		initial_width = i32(f32(1200) * monitor_scale)
+		initial_height = i32(f32(760) * monitor_scale)
+		// Keep integer window bounds explicit for the older pinned V3 frontend.
+		if initial_width > w - 80 {
+			initial_width = w - 80
+		}
+		if initial_height > h - 80 {
+			initial_height = h - 80
+		}
+		if initial_width < 320 {
+			initial_width = 320
+		}
+		if initial_height < 240 {
+			initial_height = 240
+		}
 	}
 	window := glfw.create_windowed(initial_width, initial_height, options.title) or {
 		panic(err)
