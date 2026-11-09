@@ -45,6 +45,8 @@ Otherwise controls precede the diagram. Buttons wrap and a vertical scrollbar
 keeps all controls reachable at small sizes. The optional position sliders and
 V-call details start collapsed in the compact layout. Fonts are rasterized by
 ImGui at the requested size rather than enlarging a low-resolution screenshot.
+The embedded vector face uses pixel-aligned advances and a modest glyph-coverage
+boost for sharper text, without changing character widths or control sizes.
 
 Pointer hit testing, keyboard navigation, focus and widget activation belong to
 ImGui. A custom invisible button handles the position diagram only. Pointer

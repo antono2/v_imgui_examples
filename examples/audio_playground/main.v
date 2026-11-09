@@ -95,11 +95,23 @@ fn run() ! {
 		title: 'Audio playground | antono2.audio'
 		fit_work_area: true
 		dockspace: false
+		initialize: initialize
 		prepare: prepare
 	}, frame, demo)
 	if demo.error_message != '' {
 		return error(demo.error_message)
 	}
+}
+
+fn initialize(_ voidptr) {
+	mut io := imgui.get_io_nil()
+	mut config := imgui.im_font_config_im_font_config()
+	defer { imgui.im_font_config_destroy(config) }
+	// Keep the existing face and metrics, with slightly stronger edge coverage.
+	// Pixel-aligned advances avoid introducing blur at fractional display scales.
+	config.PixelSnapH = true
+	config.RasterizerMultiply = 1.2
+	io.FontDefault = imgui.im_font_atlas_add_font_default_vector(io.Fonts, config)
 }
 
 fn prepare(mut app host.App, data voidptr) {
