@@ -102,22 +102,9 @@ pub fn run(options Options, frame fn (mut App, voidptr), state voidptr) {
 		panic(err)
 	}
 
-	// Map before renderer setup adds more X11 requests and events. GLFW 3.3
-	// can otherwise return from its visibility wait with the window unmapped.
-	// Drain startup events before asking the window manager to map it.
-	glfw.poll_events()
-	glfw.show_window(window)
-	// Showing a window can return before its window manager maps it. Mesa's
-	// X11 FIFO presentation can then block before another event poll occurs.
-	// Observe visibility before submitting the first frame, without sleeping
-	// indefinitely if the display/window manager cannot show this window.
-	visibility_deadline := glfw.get_time() + 5.0
-	for glfw.get_window_attrib(window, glfw.visible) == 0 {
-		if glfw.get_time() >= visibility_deadline {
-			panic('Window did not become visible within 5 seconds')
-		}
-		glfw.wait_events_timeout(0.01)
-	}
+	// Complete mapping before renderer setup: Mesa's X11 FIFO presentation
+	// can otherwise block before another event poll gets a chance to run.
+	show_startup_window(window) or { panic(err) }
 
 	if !glfw.vulkan_supported() {
 		panic('GLFW: Vulkan Not Supported')
