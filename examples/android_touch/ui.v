@@ -3,8 +3,20 @@
 module main
 
 import antono2.imgui
-import antono2.imgui.impl_android
+import examples.feedback
 import math
+
+const clipboard_messages = ['',
+	'The field is empty. Enter text before copying.',
+	'Copied all text. The clipboard preview is shown below.',
+	'Copy could not be confirmed. Try again while the app is in the foreground.',
+	'The clipboard is empty or unavailable.',
+	'Read clipboard. The preview is shown below.',
+	'Preview cleared. The system clipboard is unchanged.']
+
+fn clipboard_status_text(code int) string {
+	return if code >= 0 && code < clipboard_messages.len { clipboard_messages[code] } else { '' }
+}
 
 struct Selection {
 mut:
@@ -14,7 +26,7 @@ mut:
 }
 
 fn edit_text(mut data imgui.InputTextCallbackData) i32 {
-	impl_android.apply_text_edit(mut data)
+	apply_android_text_edit(mut data)
 	unsafe {
 		mut selection := &Selection(data.UserData)
 		selection.cursor = data.CursorPos
@@ -80,22 +92,19 @@ fn draw_ui(zoom &f32, taps &int, text &char, text_capacity int, clipboard &char,
 				5
 			})
 		}
-		match imgui.storage_get_int(storage, status_id, 0) {
-			1 { imgui.text_wrapped(c'The field is empty. Enter text before copying.') }
-			2 { imgui.text_wrapped(c'Copied all text. The clipboard preview is shown below.') }
-			3 {
-				imgui.text_wrapped(c'Copy could not be confirmed. Try again while the app is in the foreground.')
-			}
-			4 { imgui.text_wrapped(c'The clipboard is empty or unavailable.') }
-			5 { imgui.text_wrapped(c'Read clipboard. The preview is shown below.') }
-			6 { imgui.text_wrapped(c'Preview cleared. The system clipboard is unchanged.') }
-			else {}
-		}
+		status := clipboard_status_text(imgui.storage_get_int(storage, status_id, 0))
+		imgui.text_wrapped(status.str)
+		feedback.reserve_wrapped_text(status, clipboard_messages)
 		if clipboard_capacity > 0 {
 			imgui.text_unformatted(c'Clipboard preview:', unsafe { nil })
-			imgui.push_text_wrap_pos(0)
-			imgui.text_unformatted(clipboard, unsafe { nil })
-			imgui.pop_text_wrap_pos()
+			// Preview contents scroll without moving Clear preview or UI zoom.
+			if imgui.begin_child_str(c'##clipboard-preview', imgui.ImVec2_c{ x: -1, y: imgui.get_text_line_height_with_spacing() * 4 + imgui.get_style().WindowPadding.y * 2 }, 0, 0) {
+				imgui.push_text_wrap_pos(0)
+				imgui.text_unformatted(clipboard, unsafe { nil })
+				imgui.pop_text_wrap_pos()
+				touch_scroll()
+			}
+			imgui.end_child()
 			if imgui.button(c'Clear preview', imgui.ImVec2_c{ x: -1 }) {
 				unsafe { clipboard[0] = 0 }
 				imgui.storage_set_int(storage, status_id, 6)

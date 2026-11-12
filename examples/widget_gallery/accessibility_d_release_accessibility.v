@@ -6,6 +6,10 @@ import examples.glfw_vulkan
 import math
 import antono2.imgui
 import antono2.imgui.appui
+import examples.feedback
+
+const copied_empty_name = 'Copied an empty name.'
+const copied_name = 'Copied the name to the clipboard.'
 
 #flag -I @VMODROOT/examples/widget_gallery
 
@@ -32,6 +36,11 @@ fn draw_accessible(mut app glfw_vulkan.App, mut state Gallery) {
 		appui.theme(true, false, 1, false)
 		state.accessible_initialized = true
 	}
+	draw_accessible_frame(mut app, mut state)
+	C.v_imgui_gallery_update(app.native_window)
+}
+
+fn draw_accessible_frame(mut app glfw_vulkan.App, mut state Gallery) {
 	appui.begin_frame()
 	if state.raw_widgets && appui.back_requested() { state.raw_widgets = false }
 	appui.text(2, 'Widget gallery')
@@ -77,12 +86,13 @@ fn draw_accessible(mut app glfw_vulkan.App, mut state Gallery) {
 		if appui.button(22, 'Copy name') {
 			imgui.set_clipboard_text(&state.name[0])
 			state.clipboard_status = if unsafe { state.name[0] == 0 } {
-				'Copied an empty name.'
+				copied_empty_name
 			} else {
-				'Copied the name to the clipboard.'
+				copied_name
 			}
 		}
 		appui.status(23, state.clipboard_status)
+		feedback.reserve_wrapped_text(state.clipboard_status, [copied_empty_name, copied_name])
 		appui.separator()
 		appui.text(30, 'File list: keyboard arrows and screen-reader actions select a row; focus can reach off-screen rows.')
 		if appui.button(31, 'Focus last file') {
@@ -104,7 +114,6 @@ fn draw_accessible(mut app glfw_vulkan.App, mut state Gallery) {
 		appui.theme(true, state.high_contrast, if state.large_text { f32(2) } else { f32(1) }, false)
 	}
 	if state.raw_widgets { draw_auxiliary(mut state) }
-	C.v_imgui_gallery_update(app.native_window)
 }
 
 fn close_accessibility() {

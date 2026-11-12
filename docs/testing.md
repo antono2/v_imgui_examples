@@ -17,6 +17,20 @@ manual session for each release.
 - Compile Android V UI and package signed debug APKs for armeabi-v7a, arm64-v8a and x86_64.
 - Check package identity and the native V UI export.
 - Keep current dependency masters as an advisory compatibility check.
+- Check actual headless demo layouts with V regression tests at 100% and 200%
+  text size. Clipboard feedback, scrolling previews, counters and plot visibility
+  must preserve following hit targets. The gallery and touch checks cover raw
+  and accessible views at widths of 360, 560 and 1000 pixels.
+
+After building the Linux portable release's native library, run these geometry
+checks with the same compiler and `VMODULES` as the release build:
+
+```sh
+GLFW_INCLUDE=/usr/include GLFW_LIB=/usr/lib/x86_64-linux-gnu v run scripts/test_demo_geometry.vsh
+```
+
+These checks render real ImGui frames without a GPU or platform window. Android
+IME input and native accessibility adapter interactions remain separate checks.
 
 Local Linux smoke check, after building the three desktop executables:
 
