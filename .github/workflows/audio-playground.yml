@@ -46,6 +46,9 @@ jobs:
           $directory >> $env:GITHUB_PATH
       - name: Build native audio, ImGui example and state tests
         run: python scripts/build_audio_playground.py --test-model
+      - name: Stable action geometry and frame-synchronized native input
+        if: runner.os == 'Linux'
+        run: build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh
       - name: Actual input at 100–200 percent and compact layouts
         if: runner.os == 'Linux'
         run: python3 tests/desktop/audio_input.py

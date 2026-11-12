@@ -14,7 +14,6 @@ mut:
 	session       Session
 	silent        bool
 	report        string
-	last_report   string
 	smoke         bool
 	frames        int
 	scale         f32 = 1

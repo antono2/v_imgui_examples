@@ -58,7 +58,7 @@ fn text(value string) {
 
 fn (mut d Demo) remember(name string) {
 	a, b := imgui.get_item_rect_min(), imgui.get_item_rect_max()
-	d.items[name] = Item{ x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y, visible: imgui.is_item_visible(), focused: imgui.is_item_focused() }
+	d.items[name] = Item{ x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y, visible: imgui.is_item_visible(), focused: imgui.is_item_focused(), active: imgui.is_item_active() }
 }
 
 fn (mut d Demo) draw() {
@@ -111,8 +111,10 @@ fn (mut d Demo) draw_controls() {
 	mut used := f32(0)
 	labels := [if d.session.state.playing { 'Restart' } else { 'Play' }, 'Stop',
 		if d.session.state.gain == 0 { 'Unmute' } else { 'Mute' }, 'Reset']
+	// Reserve the widest labels so playback and mute changes do not move controls.
+	width_labels := ['Restart', 'Stop', 'Unmute', 'Reset']
 	for i, label in labels {
-		width := f32(math.max(64 * d.scale, imgui.calc_text_size(label.str, unsafe { nil }, false, 0).x + 24 * d.scale))
+		width := f32(math.max(64 * d.scale, imgui.calc_text_size(width_labels[i].str, unsafe { nil }, false, 0).x + 24 * d.scale))
 		if used > 0 && used + 10 * d.scale + width <= available {
 			imgui.same_line(0, -1)
 			used += 10 * d.scale
