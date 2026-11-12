@@ -14,9 +14,11 @@ struct Item {
 	h       f32
 	visible bool
 	focused bool
+	active  bool
 }
 
 struct Snapshot {
+	frame        int
 	backend      string = 'antono2.imgui + antono2.glfw + antono2.vulkan'
 	scale        f32
 	width        int
@@ -35,6 +37,7 @@ fn (mut d Demo) write_snapshot(app host.App) {
 	window := unsafe { &glfw.Window(app.native_window) }
 	size, pixels := glfw.window_size(window), glfw.framebuffer_size(window)
 	value := json2.encode(Snapshot{
+		frame: d.frames
 		scale: d.scale
 		width: size.width
 		height: size.height
@@ -47,8 +50,6 @@ fn (mut d Demo) write_snapshot(app host.App) {
 		scroll_max: d.scroll_max
 		error: d.error_message
 	})
-	if value != d.last_report {
-		os.write_file(d.report, value) or { panic(err) }
-		d.last_report = value
-	}
+	// Every observed frame lets native-input tests acknowledge event processing.
+	os.write_file(d.report, value) or { panic(err) }
 }

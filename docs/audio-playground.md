@@ -63,6 +63,7 @@ fullscreen toggle. There is no automatic playback and initial gain is 10%.
 
 ```sh
 python3 scripts/build_audio_playground.py --test-model
+build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh
 python3 tests/desktop/audio_input.py
 python3 tests/desktop/audio_output.py
 ```
@@ -77,6 +78,13 @@ through GLFW and ImGui: preset/button edges, cancellation, sliders, mute/restore
 source dragging, keyboard, focus loss, resize and scrolling. It captures native
 window images. The app's `--input-check` mode uses a null audio device and only
 reports observed state and widget bounds; it does not simulate input internally.
+
+Action buttons reserve their widest labels. The V geometry regression checks that
+Play/Restart and Mute/Unmute transitions keep all action bounds stable. It reuses
+pre-transition coordinates for real edge clicks, acknowledges press/release frames,
+and runs Lavapipe with one worker to cover slow rendering. Add `--dpi 192` to run
+only the 200% case. Frame numbers and active-item observations are diagnostic
+output, never commands to the application.
 
 The output test needs FFmpeg and PulseAudio or PipeWire. It records a dedicated
 virtual stereo sink, never a microphone or another application's audio. Native
