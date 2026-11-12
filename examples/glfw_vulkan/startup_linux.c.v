@@ -8,6 +8,8 @@ import antono2.glfw
 #include <dlfcn.h>
 
 fn C.dlsym(voidptr, &char) voidptr
+fn C.dlopen(&char, int) voidptr
+fn C.dlclose(voidptr) int
 
 type NativeDisplayFn = fn () voidptr
 
@@ -29,11 +31,24 @@ fn request_x11_mapping(window &glfw.Window) bool {
 	}
 	display_symbol := C.dlsym(unsafe { nil }, c'glfwGetX11Display')
 	window_symbol := C.dlsym(unsafe { nil }, c'glfwGetX11Window')
-	map_symbol := C.dlsym(unsafe { nil }, c'XMapWindow')
-	flush_symbol := C.dlsym(unsafe { nil }, c'XFlush')
-	if isnil(display_symbol) || isnil(window_symbol) || isnil(map_symbol) || isnil(flush_symbol) {
+	if isnil(display_symbol) || isnil(window_symbol) {
 		return false
 	}
+	mut map_symbol := C.dlsym(unsafe { nil }, c'XMapWindow')
+	mut flush_symbol := C.dlsym(unsafe { nil }, c'XFlush')
+	mut xlib := voidptr(0)
+	defer {
+		if !isnil(xlib) { C.dlclose(xlib) }
+	}
+	if isnil(map_symbol) || isnil(flush_symbol) {
+		// GLFW 3.4 loads Xlib with RTLD_LOCAL. Borrow that existing module;
+		// RTLD_NOLOAD avoids loading X11 into a non-X11 application.
+		xlib = C.dlopen(c'libX11.so.6', int(C.RTLD_LAZY) | int(C.RTLD_NOLOAD))
+		if isnil(xlib) { return false }
+		map_symbol = C.dlsym(xlib, c'XMapWindow')
+		flush_symbol = C.dlsym(xlib, c'XFlush')
+	}
+	if isnil(map_symbol) || isnil(flush_symbol) { return false }
 	get_display := unsafe { NativeDisplayFn(display_symbol) }
 	get_window := unsafe { NativeWindowFn(window_symbol) }
 	map_window := unsafe { NativeMapFn(map_symbol) }
