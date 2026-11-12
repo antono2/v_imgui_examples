@@ -74,7 +74,7 @@ jobs:
         shell: bash
         run: v run source/demo/scripts/check_installed_deps.vsh
       - name: Install native dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl gdb
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libvulkan-dev libvulkan-volk-dev pkg-config mesa-vulkan-drivers vulkan-validationlayers xvfb openbox xdotool x11-utils x11-xserver-utils wmctrl gdb
       - name: Build native ImGui library
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
@@ -91,6 +91,20 @@ jobs:
         run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
       - name: Check native window startup recovery
         run: v run source/demo/tests/desktop/window_startup.v "$RUNNER_TEMP/glfw_vulkan"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: glfw/glfw
+          ref: ${{ steps.compat.outputs.glfw }}
+          path: source/native-glfw
+      - name: Build declared GLFW version with local Xlib loading
+        run: |
+          cmake -S source/native-glfw -B source/native-glfw-build -DBUILD_SHARED_LIBS=ON -DGLFW_BUILD_WAYLAND=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF
+          cmake --build source/native-glfw-build --parallel 2
+      - name: Check native startup without globally linked Xlib
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/source/native-glfw-build/src
+          VIMGUI_STARTUP_LOCAL_XLIB: '1'
+        run: v run source/demo/tests/desktop/window_startup.v "$RUNNER_TEMP/glfw_vulkan" "$RUNNER_TEMP/startup-glfw34-logs"
       - name: Check desktop keyboard shortcuts
         run: |
           sudo sysctl kernel.yama.ptrace_scope=0
@@ -102,6 +116,7 @@ jobs:
           name: startup-source-linux
           path: |
             ${{ runner.temp }}/startup-logs
+            ${{ runner.temp }}/startup-glfw34-logs
             ${{ runner.temp }}/shortcut-logs
           if-no-files-found: ignore
       - name: Verify executable

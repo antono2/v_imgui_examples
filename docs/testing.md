@@ -55,6 +55,9 @@ This check requires Xvfb, Openbox, X11 development headers, Lavapipe and Vulkan
 validation layers. Source and portable-package CI retain `startup-logs` even
 on failure. The shared host uses asynchronous requests on X11; other GLFW
 platforms retain their normal show behavior.
+Source CI also rebuilds the declared GLFW 3.4 version and repeats the cases
+without a linked Xlib dependency. This exercises GLFW's local Xlib loading;
+accessibility libraries must not mask that path by exposing Xlib globally.
 
 - [x] Type a name; verify it appears in Details.
 - [x] Change the gallery checkbox, slider and combo; reopen the popup and secondary windows.

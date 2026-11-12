@@ -138,6 +138,16 @@ fn scenario(binary string, logs string, mode string) ! {
 
 fn session(binary string, logs string) ! {
 	os.mkdir_all(logs)!
+	if os.getenv('VIMGUI_STARTUP_LOCAL_XLIB') == '1' {
+		// Verify the modern GLFW lane is not masked by accessibility or other
+		// link dependencies that make Xlib globally visible to the demo.
+		linkage := os.execute('ldd ${os.quoted_path(binary)}')
+		os.write_file(os.join_path(logs, 'linkage.log'), linkage.output)!
+		if linkage.exit_code != 0 || linkage.output.contains('libX11') {
+			return error('The local-Xlib regression requires a demo without linked Xlib: ${linkage.output}')
+		}
+		println('Verified demo has no linked Xlib dependency')
+	}
 	// Keep GLFW 3.4's backend selection inside this private X11 session.
 	os.unsetenv('WAYLAND_DISPLAY')
 	os.setenv('XDG_SESSION_TYPE', 'x11', true)
