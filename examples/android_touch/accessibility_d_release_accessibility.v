@@ -5,6 +5,7 @@ module main
 import math
 import antono2.imgui
 import antono2.imgui.appui
+import examples.feedback
 
 #flag -I @VMODROOT/examples/android_touch
 
@@ -34,7 +35,12 @@ fn draw_accessible_touch(zoom &f32, taps &int, text &char, text_capacity int, cl
 	}
 	count := 'Taps: ${unsafe { *taps }}'
 	appui.status(6, count)
+	feedback.reserve_wrapped_text(count, ['Taps: 2147483647', 'Taps: -2147483648'])
 	appui.progress(7, 'Next hundred taps', f32(unsafe { *taps } % 100) / 100, count)
+	// The progress caption wraps too; reserve its full int range after the bar.
+	caption := 'Next hundred taps: ${count}'
+	feedback.reserve_wrapped_text(caption, ['Next hundred taps: Taps: 2147483647', 'Next hundred taps: Taps: -2147483648'])
+	unsafe { caption.free() }
 	unsafe { count.free() }
 	appui.set_width(-1)
 	status_id := imgui.get_id_str(c'##clipboard-status')
@@ -56,19 +62,14 @@ fn draw_accessible_touch(zoom &f32, taps &int, text &char, text_capacity int, cl
 		copy_preview(clipboard, clipboard_capacity, imgui.get_clipboard_text())
 		imgui.storage_set_int(storage, status_id, if unsafe { clipboard[0] == 0 } { 4 } else { 5 })
 	}
-	status := match imgui.storage_get_int(storage, status_id, 0) {
-		1 { 'The field is empty. Enter text before copying.' }
-		2 { 'Copied all text. The clipboard preview is shown below.' }
-		3 { 'Copy could not be confirmed. Try again while the app is in the foreground.' }
-		4 { 'The clipboard is empty or unavailable.' }
-		5 { 'Read clipboard. The preview is shown below.' }
-		6 { 'Preview cleared. The system clipboard is unchanged.' }
-		else { '' }
-	}
+	status := clipboard_status_text(imgui.storage_get_int(storage, status_id, 0))
 	appui.status(14, status)
+	feedback.reserve_wrapped_text(status, clipboard_messages)
 	appui.text(15, 'Clipboard preview:')
 	preview := unsafe { cstring_to_vstring(clipboard) }
+	appui.begin_panel(18, 'Clipboard preview', 0, imgui.get_text_line_height_with_spacing() * 4 + imgui.get_style().WindowPadding.y * 2)
 	appui.text(16, preview)
+	appui.end_panel()
 	unsafe { preview.free() }
 	if appui.button(17, 'Clear preview') {
 		unsafe { clipboard[0] = 0 }

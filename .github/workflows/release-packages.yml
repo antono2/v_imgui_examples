@@ -74,6 +74,12 @@ jobs:
       - name: Build, bundle and render Linux releases
         if: runner.os == 'Linux'
         run: ./scripts/build_release.v '${{ matrix.variant }}'
+      - name: Check demo hit-target geometry at normal and enlarged text sizes
+        if: runner.os == 'Linux'
+        env:
+          GLFW_INCLUDE: /usr/include
+          GLFW_LIB: /usr/lib/x86_64-linux-gnu
+        run: v run scripts/test_demo_geometry.vsh
       - name: Exercise bundled gallery through native AT-SPI
         if: runner.os == 'Linux'
         run: |
