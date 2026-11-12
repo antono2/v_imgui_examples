@@ -80,6 +80,9 @@ jobs:
           GLFW_INCLUDE: /usr/include
           GLFW_LIB: /usr/lib/x86_64-linux-gnu
         run: v run scripts/test_demo_geometry.vsh
+      - name: Check bundled Linux window startup recovery
+        if: runner.os == 'Linux'
+        run: v run tests/desktop/window_startup.v "build/v-imgui-examples-linux-x64-${{ matrix.variant }}/glfw_vulkan"
       - name: Exercise bundled gallery through native AT-SPI
         if: runner.os == 'Linux'
         run: |
@@ -122,6 +125,7 @@ jobs:
           path: |
             build/v-imgui-examples-linux-*/smoke-logs
             build/v-imgui-examples-linux-*/shortcut-logs
+            build/v-imgui-examples-linux-*/startup-logs
 
   android:
     strategy:

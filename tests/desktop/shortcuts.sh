@@ -36,7 +36,13 @@ start_app() {
   for i in {1..300}; do
     window=$(xdotool search --onlyvisible --name '^V ImGui:' 2>/dev/null | head -1 || true)
     if [[ -n "$window" ]]; then break; fi
-    if ! kill -0 "$app_pid" 2>/dev/null; then cat "$log_dir/$1.log"; echo "Failed to open $1" >&2; exit 1; fi
+    if ! kill -0 "$app_pid" 2>/dev/null; then
+      cat "$log_dir/$1.log" >&2
+      echo "Failed to open $1" >&2
+      cat "$log_dir/window-manager.log" >&2
+      xwininfo -root -tree >&2 || true
+      exit 1
+    fi
     sleep 0.1
   done
   if [[ -z "$window" ]]; then

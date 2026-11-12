@@ -40,6 +40,22 @@ scripts/smoke_desktop.sh "$PWD/build"
 
 ## Desktop interaction
 
+The Linux startup regression uses a private Xvfb display and a V X11 manager
+fixture. It checks ordinary startup, a handover to Openbox after a pending map
+request, a dropped first request, a permanently unavailable mapping, and an
+explicitly minimized window. Successful cases render three frames with Lavapipe
+and Vulkan validation. Failure cases must return through the five-second
+visibility deadline, rather than hanging inside GLFW's synchronous show call.
+
+```sh
+v run tests/desktop/window_startup.v build/glfw_vulkan
+```
+
+This check requires Xvfb, Openbox, X11 development headers, Lavapipe and Vulkan
+validation layers. Source and portable-package CI retain `startup-logs` even
+on failure. The shared host uses asynchronous requests on X11; other GLFW
+platforms retain their normal show behavior.
+
 - [x] Type a name; verify it appears in Details.
 - [x] Change the gallery checkbox, slider and combo; reopen the popup and secondary windows.
 - [x] Resize table columns and the main window; collapse/reopen windows.

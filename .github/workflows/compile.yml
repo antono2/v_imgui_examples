@@ -89,10 +89,21 @@ jobs:
           done
       - name: Render desktop examples with Vulkan validation
         run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
+      - name: Check native window startup recovery
+        run: v run source/demo/tests/desktop/window_startup.v "$RUNNER_TEMP/glfw_vulkan"
       - name: Check desktop keyboard shortcuts
         run: |
           sudo sysctl kernel.yama.ptrace_scope=0
           ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
+      - name: Preserve window startup diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: startup-source-linux
+          path: |
+            ${{ runner.temp }}/startup-logs
+            ${{ runner.temp }}/shortcut-logs
+          if-no-files-found: ignore
       - name: Verify executable
         run: test -x "$RUNNER_TEMP/glfw_vulkan" && test -x "$RUNNER_TEMP/widget_gallery" && test -x "$RUNNER_TEMP/implot_dashboard"
 
