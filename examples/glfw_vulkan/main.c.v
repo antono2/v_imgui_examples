@@ -347,8 +347,7 @@ pub fn (mut app App) setup_vulkan(mut instance_extensions []&char) {
 	mut create_info := vk.InstanceCreateInfo{}
 	// Enumerate available extensions
 	mut ie_properties_count := u32(0)
-	// Keep concrete pointer types for older V3 compilers that copied mutable
-	// voidptr arguments instead of using the original storage (vlang/v#31480).
+	// A null output pointer requests only the number of available extensions.
 	mut no_extension_properties := unsafe { &vk.ExtensionProperties(nil) }
 	res = vk.enumerate_instance_extension_properties(unsafe { nil }, &ie_properties_count, mut no_extension_properties)
 	check_vk_result(res)
