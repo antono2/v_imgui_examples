@@ -57,7 +57,7 @@ jobs:
         run: build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh
       - name: Actual input at 100–200 percent and compact layouts
         if: runner.os == 'Linux'
-        run: python3 tests/desktop/audio_input.py
+        run: v run tests/desktop/audio_input.vsh
       - name: Native stereo audio loopback
         if: runner.os == 'Linux'
         run: v run tests/desktop/audio_output.vsh

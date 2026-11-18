@@ -64,15 +64,15 @@ fullscreen toggle. There is no automatic playback and initial gain is 10%.
 ```sh
 v run scripts/build_audio_playground.vsh --test-model
 build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh
-python3 tests/desktop/audio_input.py
+v run tests/desktop/audio_input.vsh
 v run tests/desktop/audio_output.vsh
 ```
 
 The build check also loads the executable with `--help`, checking runtime library
 discovery without opening a window or an audio device.
 
-The input test needs Xvfb, xrdb, xdotool, ImageMagick and a Vulkan driver (Lavapipe
-is supported). It creates a separate **1920×1080** display and tests 100%, 109%,
+The input test needs Xvfb, xauth, xrdb, xdotool, ImageMagick and a Vulkan driver
+(Lavapipe is supported). It creates a separate **1920×1080** display and tests 100%, 109%,
 125%, 150% and 200% scaling, plus a **960×700** window. It drives real X11 events
 through GLFW and ImGui: preset/button edges, cancellation, sliders, mute/restore,
 source dragging, keyboard, focus loss, resize and scrolling. It captures native
