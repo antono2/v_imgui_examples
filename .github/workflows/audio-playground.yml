@@ -60,7 +60,7 @@ jobs:
         run: python3 tests/desktop/audio_input.py
       - name: Native stereo audio loopback
         if: runner.os == 'Linux'
-        run: python3 tests/desktop/audio_output.py
+        run: v run tests/desktop/audio_output.vsh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

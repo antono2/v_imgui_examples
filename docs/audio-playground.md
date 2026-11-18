@@ -65,7 +65,7 @@ fullscreen toggle. There is no automatic playback and initial gain is 10%.
 v run scripts/build_audio_playground.vsh --test-model
 build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh
 python3 tests/desktop/audio_input.py
-python3 tests/desktop/audio_output.py
+v run tests/desktop/audio_output.vsh
 ```
 
 The build check also loads the executable with `--help`, checking runtime library
