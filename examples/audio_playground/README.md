@@ -8,10 +8,10 @@ The sound comes from the native audio library; the diagram displays position.
 From the repository root:
 
 ```sh
-python3 scripts/build_audio_playground.py --run
+v run scripts/build_audio_playground.vsh --run
 ```
 
-Use `python` on Windows. The builder downloads pinned public source dependencies
+The builder downloads pinned source dependencies
 into `build/audio/`, leaving installed V modules alone. Install system prerequisites
 first; see [build, controls and validation](../../docs/audio-playground.md).
 
