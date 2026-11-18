@@ -27,7 +27,7 @@ jobs:
         id: compat
         shell: bash
         run: |
-          python scripts/test_distribution.py
+          v test scripts/releaseconsumer
           v run scripts/compatibility.vsh --self-test
           v run scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT" --variant "${{ matrix.variant }}"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -153,7 +153,7 @@ jobs:
           sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
       - name: Build accessible touch app
-        run: bash scripts/build_android.sh --build-only
+        run: v run scripts/build_android.vsh --build-only
       - name: Collect Android notices
         run: ./scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
       - name: Upload unsigned APK and notices for release signing
@@ -184,7 +184,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           sparse-checkout: |
-            scripts/test_release_package.py
+            scripts/test_release_package.vsh
+            scripts/releaseconsumer/archive.v
             scripts/compatibility.vsh
             compatibility.json
             v.mod
@@ -213,23 +214,24 @@ jobs:
         run: |
           $Archives = @(Get-ChildItem downloads -Filter '*.zip')
           if ($Archives.Count -ne 1) { throw 'Expected exactly one package archive' }
-          python scripts/test_release_package.py $Archives[0].FullName --project imgui  --logs package-smoke-logs
+          v run scripts/test_release_package.vsh $Archives[0].FullName --project imgui --logs package-smoke-logs
           if ($LASTEXITCODE -ne 0) { throw 'Windows package consumer failed' }
       - name: Test Linux package in a runtime-only Ubuntu container
         if: runner.os == 'Linux'
         shell: bash
         run: |
           mkdir -p package-smoke-logs
+          v -cc gcc -skip-running -o ./test-release-package scripts/test_release_package.vsh
           docker run --rm --init -v "$PWD:/consumer" -w /consumer ubuntu:24.04 bash -euxc '
             apt-get update
-            apt-get install -y --no-install-recommends python3 xvfb xauth mesa-vulkan-drivers libvulkan1 vulkan-validationlayers
+            apt-get install -y --no-install-recommends xvfb xauth mesa-vulkan-drivers libvulkan1 vulkan-validationlayers
             if command -v v; then exit 1; fi
             if command -v cmake; then exit 1; fi
             if command -v cc; then exit 1; fi
             if dpkg-query -W libglfw3 2>/dev/null; then exit 1; fi
             mapfile -t archives < <(find downloads -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" \))
             test "${#archives[@]}" -eq 1
-            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout --kill-after=10s 8m xvfb-run -a python3 -u scripts/test_release_package.py "${archives[0]}" --project imgui  --logs package-smoke-logs
+            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout --kill-after=10s 8m xvfb-run -a ./test-release-package "${archives[0]}" --project imgui --logs package-smoke-logs
           '
       - name: Preserve consumer logs
         if: always()
