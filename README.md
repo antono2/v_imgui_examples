@@ -159,7 +159,7 @@ release work, `scripts/build_release.v` prepares binaries,
 `scripts/package_release.v` assembles the desktop distribution and
 `scripts/release_tools/` contains shared process, license, dependency and ZIP
 helpers. `packaging/` contains the release launcher. Desktop rendering,
-shortcut and accessibility checks live in `scripts/smoke_desktop.sh` and
+shortcut and accessibility checks live in `scripts/smoke_desktop.vsh` and
 `tests/desktop/`; Android accessibility checks run against a connected device.
 
 ![V + Vulkan + GLFW + Dear ImGui](Snapshot_glfw_vulkan.png)

@@ -92,7 +92,7 @@ jobs:
             v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/$example" "$source"
           done
       - name: Render desktop examples with Vulkan validation
-        run: bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
+        run: v run source/demo/scripts/smoke_desktop.vsh "$RUNNER_TEMP"
       - name: Check native window startup recovery
         run: v run source/demo/tests/desktop/window_startup.v "$RUNNER_TEMP/glfw_vulkan"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -188,8 +188,10 @@ jobs:
         shell: bash
         run: v run source/demo/scripts/check_installed_deps.vsh
       - name: Install Vulkan SDK and SwiftShader test artifacts
-        shell: bash
-        run: v run source/modules/antono2/imgui/scripts/setup_vulkan_ci.vsh ${{ steps.compat.outputs.ci_sdk }} ${{ steps.compat.outputs.ci_runtime }}
+        uses: antono2/vulkan/.github/actions/setup-vulkan-ci@04620525bab9fd843ad3b9046171aaff4dfe3d3c
+        with:
+          sdk-version: ${{ steps.compat.outputs.ci_sdk }}
+          artifact-tag: ${{ steps.compat.outputs.ci_runtime }}
       - name: Install matching Volk header
         shell: pwsh
         run: |
@@ -388,7 +390,7 @@ jobs:
             if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi
             v -new-compiler -no-memory-limit -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc -o "$RUNNER_TEMP/$example" "$source"
           done
-          bash source/demo/scripts/smoke_desktop.sh "$RUNNER_TEMP"
+          v run source/demo/scripts/smoke_desktop.vsh "$RUNNER_TEMP"
 
   required-checks:
     if: always()

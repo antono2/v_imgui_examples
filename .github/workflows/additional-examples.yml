@@ -65,7 +65,7 @@ jobs:
             if [ "$example" != glfw_vulkan ]; then source="examples/$example"; fi
             v -no-memory-limit -cc gcc -o "build/$example" "$source"
           done
-          bash scripts/smoke_desktop.sh "$GITHUB_WORKSPACE/build"
+          v run scripts/smoke_desktop.vsh "$GITHUB_WORKSPACE/build"
       - name: Upload rendering logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
