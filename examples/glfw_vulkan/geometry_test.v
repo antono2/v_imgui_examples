@@ -1,3 +1,5 @@
+// Checks that changing counter values and window toggles preserves demo control geometry.
+// Uses real ImGui layout at multiple scales without creating a platform window.
 module glfw_vulkan
 
 import antono2.imgui
