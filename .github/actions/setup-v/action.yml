@@ -3,11 +3,14 @@ description: Build the V compiler and compatibility compiler used by the example
 runs:
   using: composite
   steps:
+    - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+      with:
+        version: 0.5.2
     - name: Resolve tested compiler pins
       id: compat
       shell: bash
       run: |
-        python scripts/test_doctor.py
+        v run scripts/doctor.vsh --self-test
         python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:

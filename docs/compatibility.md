@@ -41,7 +41,7 @@ Windows v1.0.1 variants passed this test on the audit machine's physical GPU.
 
 ## Read-only diagnostics
 
-Run `python scripts/doctor.py --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY`
+Run `v run scripts/doctor.vsh --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY`
 to report the selected compiler, build tools and installed dependency versions.
 Use `--sdk SDK_DIRECTORY` when VULKAN_SDK is not set, `--runtime` for optional
 GPU/driver enumeration, and `--json` for a support report. Each missing or mismatched
@@ -49,7 +49,7 @@ prerequisite has a recovery action. Diagnostics do not repair caches or change
 the environment. Device enumeration does not validate hardware decoding or
 OpenCL interoperability. Python 3.9 or newer is required.
 
-For `doctor.py`, the default `--profile stable` checks the exact compiler commit
+For `doctor.vsh`, the default `--profile stable` checks the exact compiler commit
 stored in `compatibility.json` as `v`; `--profile v3` checks the `v3_v` commit.
 Use a compiler built at the selected revision for these diagnostics.
 
@@ -59,5 +59,5 @@ with `--platform linux` or `--platform windows` and `--variant docking` or
 
 ```sh
 python scripts/compatibility.py --compiler v3 --platform linux --variant standard
-python scripts/doctor.py --profile v3 --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY
+v run scripts/doctor.vsh --profile v3 --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY
 ```

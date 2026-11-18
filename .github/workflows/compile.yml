@@ -28,11 +28,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           path: source/demo
+      - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+        with:
+          version: 0.5.2
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
         run: |
-          python source/demo/scripts/test_doctor.py
+          v run source/demo/scripts/doctor.vsh --self-test
           python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -131,11 +134,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           path: source/demo
+      - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+        with:
+          version: 0.5.2
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
         run: |
-          python source/demo/scripts/test_doctor.py
+          v run source/demo/scripts/doctor.vsh --self-test
           python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -258,11 +264,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           path: source/demo
+      - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+        with:
+          version: 0.5.2
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
         run: |
-          python source/demo/scripts/test_doctor.py
+          v run source/demo/scripts/doctor.vsh --self-test
           python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT" --compiler v3
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

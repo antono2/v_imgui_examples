@@ -44,6 +44,11 @@ jobs:
           "ANTONO2_AUDIO_AR=$(Join-Path $directory 'ar.exe')" >> $env:GITHUB_ENV
           "CXX=$cxx" >> $env:GITHUB_ENV
           $directory >> $env:GITHUB_PATH
+      - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+        with:
+          version: 0.5.2
+      - name: Verify bundled chime against generated PCM
+        run: v run scripts/generate_audio_chime.vsh --check
       - name: Build native audio, ImGui example and state tests
         run: python scripts/build_audio_playground.py --test-model
       - name: Stable action geometry and frame-synchronized native input
