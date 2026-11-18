@@ -95,7 +95,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo sysctl kernel.yama.ptrace_scope=0
-          ./tests/desktop/shortcuts.sh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
+          v run tests/desktop/shortcuts.vsh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
       - name: Build and audit Windows release DLLs
         if: runner.os == 'Windows'
         shell: pwsh
@@ -155,7 +155,7 @@ jobs:
           sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
       - name: Build accessible touch app
-        run: bash scripts/build_android.sh --build-only
+        run: v run scripts/build_android.vsh --build-only
       - name: Collect Android notices
         run: ./scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
       - name: Upload unsigned APK and notices for release signing

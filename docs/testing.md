@@ -32,11 +32,15 @@ GLFW_INCLUDE=/usr/include GLFW_LIB=/usr/lib/x86_64-linux-gnu v run scripts/test_
 These checks render real ImGui frames without a GPU or platform window. Android
 IME input and native accessibility adapter interactions remain separate checks.
 
-Local Linux smoke check, after building the three desktop executables:
+After building the desktop examples, run the Linux rendering smoke check:
 
 ```sh
-scripts/smoke_desktop.sh "$PWD/build"
+v run scripts/smoke_desktop.vsh "$PWD/build"
 ```
+
+Install Xvfb, Lavapipe, and Vulkan validation layers. The command accepts a
+directory with the individual executables or the packaged `examples` launcher
+and writes a log per example under `smoke-logs/` in that directory.
 
 ## Desktop interaction
 
@@ -70,7 +74,7 @@ accessibility libraries must not mask that path by exposing Xlib globally.
 - [x] Escape quits each desktop example; active text editing and popups consume it first.
 - [x] F11 toggles borderless fullscreen, preserves normal/maximized restore bounds and does not repeat while held.
 
-Run `./tests/desktop/shortcuts.sh binary-dir --raw-gallery` for keyboard checks
+Run `v run tests/desktop/shortcuts.vsh binary-dir --raw-gallery` for keyboard checks
 of source builds, or omit `--raw-gallery` for accessible release builds. The
 check uses its own Xvfb display with Openbox, xdotool, xprop and wmctrl.
 It also checks that the display mode is unchanged and enables Vulkan validation
@@ -123,11 +127,28 @@ and resume state. Repeat with the final release APK and test portrait/landscape,
 visible system navigation bars and IME. Check TalkBack spoken navigation manually;
 provider action tests do not establish the quality of spoken announcements.
 
-To run instrumentation against a signed release APK, set
-`VIMGUI_ANDROID_TEST_APK`, `VIMGUI_ANDROID_TEST_KEYSTORE` and
-`VIMGUI_ANDROID_TEST_PASSWORD_FILE` before running
-`scripts/test_android_accessibility.sh`. A debug installation with a different
-certificate must be removed first; uninstalling it removes its saved demo data.
+With the Android SDK and NDK installed, use the V revision from
+`compatibility.json` to build the accessibility-enabled debug APK and run its
+instrumentation on the selected device:
+
+```sh
+ANDROID_ABI=x86_64 VIMGUI_ANDROID_APPLICATION_UI=1 v run scripts/build_android.vsh --build-only
+v run scripts/test_android_accessibility.vsh
+```
+
+Choose the device's ABI for the build. Set `ANDROID_SERIAL` when more than one
+device is connected. The test reads the ABI from the device and uses the
+corresponding `build/android-touch-ABI` directory by default.
+
+| Environment variable | Use |
+| --- | --- |
+| `VIMGUI_ANDROID_BUILD_DIR` | Use the same custom build directory for the APK and instrumentation. |
+| `VIMGUI_ANDROID_TEST_APK` | Test a signed release APK in place of the debug APK. |
+| `VIMGUI_ANDROID_TEST_KEYSTORE` | Sign the instrumentation APK with the app's certificate. |
+| `VIMGUI_ANDROID_TEST_PASSWORD_FILE` | Read the release signing password from a file. |
+
+A debug installation with a different certificate must be removed first.
+Uninstalling it removes its saved demo data.
 
 ## Audio playground
 
