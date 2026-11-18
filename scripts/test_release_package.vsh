@@ -124,7 +124,7 @@ fn runtime_environment(home string) map[string]string {
 
 fn run_torus(test TestRun, package string, env map[string]string) ! {
 	windows := os.user_os() == 'windows'
-	launcher := os.join_path(package, if windows { 'torus_trooper.exe' } else { 'play.sh' })
+	launcher := os.join_path(package, if windows { 'torus_trooper.exe' } else { 'torus_trooper' })
 	$if !windows {
 		os.chmod(launcher, 0o755)!
 	}
