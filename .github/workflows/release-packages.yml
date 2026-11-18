@@ -93,7 +93,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo sysctl kernel.yama.ptrace_scope=0
-          ./tests/desktop/shortcuts.sh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
+          v run tests/desktop/shortcuts.vsh "build/v-imgui-examples-linux-x64-${{ matrix.variant }}"
       - name: Build and audit Windows release DLLs
         if: runner.os == 'Windows'
         shell: pwsh

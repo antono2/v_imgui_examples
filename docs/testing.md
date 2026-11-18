@@ -74,7 +74,7 @@ accessibility libraries must not mask that path by exposing Xlib globally.
 - [x] Escape quits each desktop example; active text editing and popups consume it first.
 - [x] F11 toggles borderless fullscreen, preserves normal/maximized restore bounds and does not repeat while held.
 
-Run `./tests/desktop/shortcuts.sh binary-dir --raw-gallery` for keyboard checks
+Run `v run tests/desktop/shortcuts.vsh binary-dir --raw-gallery` for keyboard checks
 of source builds, or omit `--raw-gallery` for accessible release builds. The
 check uses its own Xvfb display with Openbox, xdotool, xprop and wmctrl.
 It also checks that the display mode is unchanged and enables Vulkan validation
