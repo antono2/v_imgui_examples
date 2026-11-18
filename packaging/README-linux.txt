@@ -1,13 +1,13 @@
 V ImGui examples — Ubuntu 24.04 or newer, x86_64
 
 Extract the whole archive. From its directory, run:
-  ./run.sh
+  ./examples
 
 Choose an example from the menu. Press Enter for Widget gallery.
 To launch directly:
-  ./run.sh widget_gallery
-  ./run.sh implot_dashboard
-  ./run.sh glfw_vulkan
+  ./examples widget_gallery
+  ./examples implot_dashboard
+  ./examples glfw_vulkan
 
 In an example, Escape quits after active controls consume it to cancel an edit
 or popup. F11 toggles borderless fullscreen and restores the previous window.

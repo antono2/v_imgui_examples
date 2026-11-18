@@ -24,7 +24,13 @@ mut:
 
 fn main() {
 	mut gallery := Gallery{}
-	glfw_vulkan.run(glfw_vulkan.Options{ title: 'V ImGui: widget gallery', shutdown: close_gallery }, draw, &gallery)
+	// The accessible gallery owns the viewport and renders behind the main dockspace.
+	dockspace := $if release_accessibility ? { false } $else { true }
+	glfw_vulkan.run(glfw_vulkan.Options{
+		title: 'V ImGui: widget gallery'
+		dockspace: dockspace
+		shutdown: close_gallery
+	}, draw, &gallery)
 }
 
 fn draw(mut app glfw_vulkan.App, userdata voidptr) {
@@ -99,7 +105,11 @@ fn draw_widgets(mut app glfw_vulkan.App, mut state Gallery) {
 	}
 	imgui.checkbox(c'Details window', &state.show_details)
 	imgui.checkbox(c'Upstream demo', &state.show_demo)
-	if app.docking_available { imgui.checkbox(c'Main dockspace', &app.dockspace_enabled) }
+	$if !release_accessibility ? {
+		if app.docking_available {
+			imgui.checkbox(c'Main dockspace', &app.dockspace_enabled)
+		}
+	}
 }
 
 fn close_gallery(_ voidptr) {

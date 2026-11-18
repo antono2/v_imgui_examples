@@ -124,7 +124,7 @@ fn runtime_environment(home string) map[string]string {
 
 fn run_torus(test TestRun, package string, env map[string]string) ! {
 	windows := os.user_os() == 'windows'
-	launcher := os.join_path(package, if windows { 'torus_trooper.exe' } else { 'play.sh' })
+	launcher := os.join_path(package, if windows { 'torus_trooper.exe' } else { 'torus_trooper' })
 	$if !windows {
 		os.chmod(launcher, 0o755)!
 	}
@@ -139,24 +139,22 @@ fn run_torus(test TestRun, package string, env map[string]string) ! {
 fn run_imgui(test TestRun, package string, mut env map[string]string) ! {
 	windows := os.user_os() == 'windows'
 	menu := os.join_path(package, if windows { 'examples.exe' } else { 'examples' })
-	launcher := if windows { menu } else { os.join_path(package, 'run.sh') }
 	examples := ['glfw_vulkan', 'widget_gallery', 'implot_dashboard']
 	$if !windows {
-		os.chmod(launcher, 0o755)!
 		os.chmod(menu, 0o755)!
 		for name in examples {
 			os.chmod(os.join_path(package, name), 0o755)!
 		}
 	}
-	// The Linux wrapper accepts example names. The compiled menu handles help on both platforms.
 	test.launch(menu, ['--help'], env, 'launcher-help', 'Usage:', 0)!
+	test.launch(menu, ['unknown_example'], env, 'invalid-example', 'Unknown example:', 2)!
 	for example in examples {
 		env['VIMGUI_SMOKE_FRAMES'] = if example == 'implot_dashboard' {
 			dashboard_frames
 		} else {
 			example_frames
 		}
-		test.launch(launcher, [example], env, example, '', 0)!
+		test.launch(menu, [example], env, example, '', 0)!
 	}
 }
 

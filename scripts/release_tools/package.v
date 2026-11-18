@@ -99,8 +99,6 @@ fn package_linux(root string, binaries string, imgui string, output string) ![]s
 		debian_notice(library.path, os.join_path(output, 'licenses'))!
 	}
 	collect_licenses(root, imgui, os.join_path(output, 'licenses'), false)!
-	copy(os.join_path(root, 'packaging', 'run.sh'), os.join_path(output, 'run.sh'))!
-	os.chmod(os.join_path(output, 'run.sh'), 0o755)!
 	copy(os.join_path(root, 'packaging', 'README-linux.txt'), os.join_path(output, 'README.txt'))!
 	mut audit_files := []string{}
 	for example in programs {
