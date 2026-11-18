@@ -27,11 +27,11 @@ jobs:
       GLFW_LIB: /usr/lib/x86_64-linux-gnu
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/setup-v
       - name: Resolve standard compatibility pins
         id: compat
         shell: bash
-        run: python scripts/compatibility.py --variant standard --github-output "$GITHUB_OUTPUT"
-      - uses: ./.github/actions/setup-v
+        run: v run scripts/compatibility.vsh --variant standard --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui

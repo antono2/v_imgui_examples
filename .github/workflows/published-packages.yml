@@ -30,14 +30,18 @@ jobs:
         with:
           sparse-checkout: |
             scripts/test_release_package.py
-            scripts/compatibility.py
+            scripts/compatibility.vsh
             compatibility.json
             v.mod
           sparse-checkout-cone-mode: false
+      - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+        with:
+          version: 0.5.2
+          install-dependencies: false
       - name: Resolve consumer runtime pins
         id: compat
         shell: bash
-        run: python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+        run: v run scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT"
       - name: Download published package and checksums
         shell: bash
         env:
