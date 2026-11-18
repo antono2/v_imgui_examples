@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           v run source/demo/scripts/doctor.vsh --self-test
-          python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+          v run source/demo/scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
@@ -144,7 +144,7 @@ jobs:
         shell: bash
         run: |
           v run source/demo/scripts/doctor.vsh --self-test
-          python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+          v run source/demo/scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui
@@ -275,7 +275,7 @@ jobs:
         shell: bash
         run: |
           v run source/demo/scripts/doctor.vsh --self-test
-          python source/demo/scripts/compatibility.py --github-output "$GITHUB_OUTPUT" --compiler v3
+          v run source/demo/scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT" --compiler v3
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: antono2/imgui

@@ -22,13 +22,14 @@ jobs:
       VMODULES: ${{ github.workspace }}/build/modules
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-v
       - name: Resolve tested compatibility manifest
         id: compat
         shell: bash
         run: |
           python scripts/test_distribution.py
-          python scripts/compatibility.py --github-output "$GITHUB_OUTPUT" --variant "${{ matrix.variant }}"
-      - uses: ./.github/actions/setup-v
+          v run scripts/compatibility.vsh --self-test
+          v run scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT" --variant "${{ matrix.variant }}"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: antono2/imgui
@@ -50,7 +51,7 @@ jobs:
         run: |
           python scripts/test_installed_deps.py
           v run scripts/check_installed_deps.vsh --tag-override 'antono2.imgui=${{ steps.compat.outputs.module_imgui }}'
-          python scripts/compatibility.py --variant "${{ matrix.variant }}" --modules build/modules
+          v run scripts/compatibility.vsh --variant "${{ matrix.variant }}" --modules build/modules
       - name: Install Linux build and rendering tools
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers ripgrep gdb xvfb patchelf zip xdotool openbox x11-utils x11-xserver-utils wmctrl
@@ -184,14 +185,18 @@ jobs:
         with:
           sparse-checkout: |
             scripts/test_release_package.py
-            scripts/compatibility.py
+            scripts/compatibility.vsh
             compatibility.json
             v.mod
           sparse-checkout-cone-mode: false
+      - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
+        with:
+          version: 0.5.2
+          install-dependencies: false
       - name: Resolve consumer runtime pins
         id: compat
         shell: bash
-        run: python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+        run: v run scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: desktop-${{ runner.os }}-${{ matrix.variant }}

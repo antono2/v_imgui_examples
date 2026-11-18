@@ -10,7 +10,7 @@ The existing checker validates the recursive module graph, and the compatibility
 checker verifies the selected docking/standard release pins after checkout.
 
 Upgrade the manifest and affected `v.mod` declarations together. Run
-`python scripts/test_distribution.py` and `python scripts/compatibility.py`.
+`v run scripts/compatibility.vsh --self-test` and `python scripts/test_distribution.py`.
 The required application compilation, four desktop release builds, rendering,
 accessibility tests and package consumers validate the upgrade through actual
 applications. Keep the advisory current-master checks separate from release pins.
@@ -59,6 +59,6 @@ with `--platform linux` or `--platform windows` and `--variant docking` or
 `--variant standard`. For example:
 
 ```sh
-python scripts/compatibility.py --compiler v3 --platform linux --variant standard
+v run scripts/compatibility.vsh --compiler v3 --platform linux --variant standard
 v run scripts/doctor.vsh --profile v3 --v PATH_TO_TESTED_V --modules MODULE_DIRECTORY
 ```

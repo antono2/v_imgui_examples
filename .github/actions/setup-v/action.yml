@@ -12,7 +12,7 @@ runs:
       shell: bash
       run: |
         v run scripts/doctor.vsh --self-test
-        python scripts/compatibility.py --github-output "$GITHUB_OUTPUT"
+        v run scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT"
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         repository: vlang/v
