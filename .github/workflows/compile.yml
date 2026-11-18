@@ -112,7 +112,7 @@ jobs:
       - name: Check desktop keyboard shortcuts
         run: |
           sudo sysctl kernel.yama.ptrace_scope=0
-          ./source/demo/tests/desktop/shortcuts.sh "$RUNNER_TEMP" --raw-gallery
+          v run source/demo/tests/desktop/shortcuts.vsh "$RUNNER_TEMP" --raw-gallery
       - name: Preserve window startup diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
