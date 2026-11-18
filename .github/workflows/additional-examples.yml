@@ -98,7 +98,9 @@ jobs:
           sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
       - name: Package external V UI with upstream host
-        run: bash scripts/build_android.sh --build-only
+        run: |
+          v -check scripts/test_android_accessibility.vsh
+          v run scripts/build_android.vsh --build-only
       - name: Verify package and exported UI
         run: |
           apk="build/android-touch-$ANDROID_ABI/vimgui-demo-$ANDROID_ABI.apk"

@@ -127,11 +127,28 @@ and resume state. Repeat with the final release APK and test portrait/landscape,
 visible system navigation bars and IME. Check TalkBack spoken navigation manually;
 provider action tests do not establish the quality of spoken announcements.
 
-To run instrumentation against a signed release APK, set
-`VIMGUI_ANDROID_TEST_APK`, `VIMGUI_ANDROID_TEST_KEYSTORE` and
-`VIMGUI_ANDROID_TEST_PASSWORD_FILE` before running
-`scripts/test_android_accessibility.sh`. A debug installation with a different
-certificate must be removed first; uninstalling it removes its saved demo data.
+With the Android SDK and NDK installed, use the V revision from
+`compatibility.json` to build the accessibility-enabled debug APK and run its
+instrumentation on the selected device:
+
+```sh
+ANDROID_ABI=x86_64 VIMGUI_ANDROID_APPLICATION_UI=1 v run scripts/build_android.vsh --build-only
+v run scripts/test_android_accessibility.vsh
+```
+
+Choose the device's ABI for the build. Set `ANDROID_SERIAL` when more than one
+device is connected. The test reads the ABI from the device and uses the
+corresponding `build/android-touch-ABI` directory by default.
+
+| Environment variable | Use |
+| --- | --- |
+| `VIMGUI_ANDROID_BUILD_DIR` | Use the same custom build directory for the APK and instrumentation. |
+| `VIMGUI_ANDROID_TEST_APK` | Test a signed release APK in place of the debug APK. |
+| `VIMGUI_ANDROID_TEST_KEYSTORE` | Sign the instrumentation APK with the app's certificate. |
+| `VIMGUI_ANDROID_TEST_PASSWORD_FILE` | Read the release signing password from a file. |
+
+A debug installation with a different certificate must be removed first.
+Uninstalling it removes its saved demo data.
 
 ## Audio playground
 

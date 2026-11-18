@@ -153,7 +153,7 @@ jobs:
           sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
       - name: Build accessible touch app
-        run: bash scripts/build_android.sh --build-only
+        run: v run scripts/build_android.vsh --build-only
       - name: Collect Android notices
         run: ./scripts/collect_licenses.v build/modules/antono2/imgui "build/android-touch-$ANDROID_ABI/licenses" android
       - name: Upload unsigned APK and notices for release signing
