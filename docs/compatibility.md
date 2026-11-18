@@ -10,7 +10,7 @@ The existing checker validates the recursive module graph, and the compatibility
 checker verifies the selected docking/standard release pins after checkout.
 
 Upgrade the manifest and affected `v.mod` declarations together. Run
-`v run scripts/compatibility.vsh --self-test` and `python scripts/test_distribution.py`.
+`v run scripts/compatibility.vsh --self-test` and `v test scripts/releaseconsumer`.
 The required application compilation, four desktop release builds, rendering,
 accessibility tests and package consumers validate the upgrade through actual
 applications. Keep the advisory current-master checks separate from release pins.
@@ -33,7 +33,7 @@ manually with a release tag. It downloads each ZIP and `SHA256SUMS.txt`, verifie
 the matching checksum, and runs the same consumers. To test a download locally:
 
 ```sh
-python scripts/test_release_package.py PACKAGE.zip --project imgui --checksums SHA256SUMS.txt
+v run scripts/test_release_package.vsh PACKAGE.zip --project imgui --checksums SHA256SUMS.txt
 ```
 
 On Linux, run inside `xvfb-run -a` when there is no desktop session. Both published
