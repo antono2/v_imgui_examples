@@ -1,5 +1,9 @@
 # ImPlot dashboard
 
+![ImPlot dashboard showing sine and cosine waves and their rolling history](screenshot.png)
+
+The dashboard plots the live sine and cosine samples above the rolling history.
+
 From the repository root:
 
 ```sh
@@ -23,5 +27,3 @@ CI renders 660 frames to exercise wraparound.
 Change amplitude/frequency, toggle each series, hide series through the legend,
 pan/zoom the waveforms, pause/resume history and reset it. The history plot keeps
 its axes locked to the latest ten simulated seconds.
-
-![implot dashboard](screenshot.png)
