@@ -51,7 +51,7 @@ jobs:
       - name: Verify bundled chime against generated PCM
         run: v run scripts/generate_audio_chime.vsh --check
       - name: Build native audio, ImGui example and state tests
-        run: python scripts/build_audio_playground.py --test-model
+        run: v run scripts/build_audio_playground.vsh --test-model
       - name: Stable action geometry and frame-synchronized native input
         if: runner.os == 'Linux'
         run: build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh

@@ -6,19 +6,19 @@ no handwritten additions to the ImGui generator are required.
 
 ## Build
 
-Run `python3 scripts/build_audio_playground.py --check` to check build tools, then
-`python3 scripts/build_audio_playground.py --run` to build and launch. Use `python`
-on Windows. The script does not install system packages.
+Run `v run scripts/build_audio_playground.vsh --check` to check build tools, then
+`v run scripts/build_audio_playground.vsh --run` to build and launch. Install
+V 0.5.2 or newer before running the builder.
 
 Prerequisites:
 
-- Linux: Python 3, Git, CMake, pkg-config, a C/C++ compiler, GLFW development files,
+- Linux: Git, CMake, pkg-config, a C/C++ compiler, GLFW development files,
   and a Vulkan driver. On Debian/Ubuntu: `build-essential cmake pkg-config
-  libglfw3-dev mesa-vulkan-drivers` plus Python and Git.
-- macOS: Xcode command-line tools, Python 3, Git, CMake, pkg-config and GLFW
+  libglfw3-dev mesa-vulkan-drivers` plus Git.
+- macOS: Xcode command-line tools, Git, CMake, pkg-config and GLFW
   (`brew install cmake pkg-config glfw`). Running also requires a configured Vulkan
   loader and MoltenVK. Compilation alone does not verify presentation.
-- Windows: Python, Git, CMake, Ninja and a MinGW-w64 GCC/G++ toolchain on PATH.
+- Windows: Git, CMake, Ninja and a MinGW-w64 GCC/G++ toolchain on PATH.
   The build prepares GLFW and copies runtime DLLs beside the executable. Running
   requires a Vulkan-capable graphics driver.
 
@@ -62,7 +62,7 @@ fullscreen toggle. There is no automatic playback and initial gain is 10%.
 ## Automated validation
 
 ```sh
-python3 scripts/build_audio_playground.py --test-model
+v run scripts/build_audio_playground.vsh --test-model
 build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh
 python3 tests/desktop/audio_input.py
 python3 tests/desktop/audio_output.py

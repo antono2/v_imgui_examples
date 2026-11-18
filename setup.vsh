@@ -182,17 +182,13 @@ fn guided_main() ! {
 		return error('--check cannot be combined with --run.')
 	}
 	if example == 'audio_playground' {
-		python := if os.exists_in_system_path('python3') { 'python3' } else { 'python' }
-		if !os.exists_in_system_path(python) {
-			return error('Install Python 3; see docs/audio-playground.md.')
-		}
 		if interactive && !confirm('Download pinned dependencies and build the audio playground? No system packages will be installed.')! {
 			return
 		}
 		flags := if mode == '--check' {
 			' --check'
 		} else if launch { ' --run' } else { '' }
-		run('${python} ${os.quoted_path(os.join_path(project_dir, 'scripts', 'build_audio_playground.py'))}${flags}')!
+		run('${os.quoted_path(@VEXE)} run ${os.quoted_path(os.join_path(project_dir, 'scripts', 'build_audio_playground.vsh'))}${flags}')!
 		return
 	}
 	source := if example == 'glfw_vulkan' {
