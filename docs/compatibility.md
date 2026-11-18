@@ -47,7 +47,8 @@ Use `--sdk SDK_DIRECTORY` when VULKAN_SDK is not set, `--runtime` for optional
 GPU/driver enumeration, and `--json` for a support report. Each missing or mismatched
 prerequisite has a recovery action. Diagnostics do not repair caches or change
 the environment. Device enumeration does not validate hardware decoding or
-OpenCL interoperability. Python 3.9 or newer is required.
+OpenCL interoperability. Run these diagnostics with the tested V compiler
+selected by `compatibility.json`.
 
 For `doctor.vsh`, the default `--profile stable` checks the exact compiler commit
 stored in `compatibility.json` as `v`; `--profile v3` checks the `v3_v` commit.

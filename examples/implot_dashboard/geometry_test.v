@@ -1,3 +1,5 @@
+// Checks that plot visibility and history changes preserve dashboard control geometry.
+// Uses real ImGui layout at multiple scales without a platform window.
 module main
 
 import antono2.imgui

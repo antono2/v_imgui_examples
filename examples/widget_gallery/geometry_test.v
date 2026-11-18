@@ -1,3 +1,5 @@
+// Checks that feedback changes preserve gallery control geometry in ordinary and accessible layouts.
+// Uses the headless layout harness rather than a native accessibility adapter.
 module main
 
 import antono2.imgui
