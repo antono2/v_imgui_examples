@@ -1,5 +1,9 @@
 # Audio playground
 
+![Audio playground with sound position, playback controls and the V call](screenshot.png)
+
+Drag the sound around the listener to update its position and see the corresponding V call.
+
 A native spatial-audio demonstration of [`antono2.audio`](https://github.com/antono2/audio),
 using `antono2.imgui`, `antono2.glfw` and `antono2.vulkan` for its desktop interface.
 Move the sound around the listener, change volume and see the corresponding V call.

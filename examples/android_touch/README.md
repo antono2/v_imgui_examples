@@ -1,5 +1,9 @@
 # Android touch and text
 
+![Android touch and text demo after tapping the counter](screenshot.png)
+
+The Android demo shows a tap counter, editable text and clipboard controls.
+
 The V UI reuses the pinned upstream NativeActivity/Vulkan host, Java input
 bridge and FreeType font. It has its own package ID,
 `io.antono2.vimgui.examples.touch`, so it can coexist with upstream's demo.

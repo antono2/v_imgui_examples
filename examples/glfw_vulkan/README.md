@@ -1,5 +1,9 @@
 # GLFW/Vulkan host and default demo
 
+![GLFW and Vulkan host with example controls and the Dear ImGui demo](screenshot.png)
+
+The docking build opens with the example controls and the Dear ImGui demo window.
+
 From the repository root:
 
 ```sh

@@ -1,5 +1,9 @@
 # Widget gallery
 
+![Widget gallery with text input, sliders, a combo box and a table](screenshot.png)
+
+The raw widget view shows editable controls and a table.
+
 From the repository root:
 
 ```sh
@@ -17,8 +21,6 @@ bytes plus its terminator.
 Type a name and open Details; change controls; open/close the popup and Details;
 resize table columns; toggle the upstream demo. Docking is optional and the same
 source runs against the standard ImGui variant.
-
-![widget gallery](screenshot.png)
 
 ## Accessible release view
 
