@@ -31,6 +31,7 @@ jobs:
       - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
         with:
           version: 0.5.2
+          install-dependencies: false
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
@@ -137,6 +138,7 @@ jobs:
       - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
         with:
           version: 0.5.2
+          install-dependencies: false
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
@@ -267,6 +269,7 @@ jobs:
       - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
         with:
           version: 0.5.2
+          install-dependencies: false
       - name: Resolve compatibility manifest
         id: compat
         shell: bash
