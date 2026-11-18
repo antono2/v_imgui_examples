@@ -102,5 +102,5 @@ ImGui widgets here do not expose a native screen-reader accessibility tree.
 the interface; `model/` holds bounded state; `diagnostics.v` observes test runs.
 The shared host adds optional work-area sizing and a pre-frame callback without
 changing the other examples' defaults. The original mono chime is MIT-licensed
-with the example and can be regenerated using `scripts/generate_audio_chime.py`.
+with the example and can be regenerated using `v run scripts/generate_audio_chime.vsh`.
 Dependency source and licenses remain in their public repositories/checkouts.

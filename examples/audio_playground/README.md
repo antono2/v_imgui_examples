@@ -32,7 +32,7 @@ build/audio_playground --file /path/to/mono.ogg
 ```
 
 The bundled chime is original MIT-licensed audio by Anton Oreskin, reproducible
-with `python3 scripts/generate_audio_chime.py`. Stereo files are rejected because
+with `v run scripts/generate_audio_chime.vsh`. Stereo files are rejected because
 this example demonstrates spatial placement of a mono source.
 
 This is a desktop source example. It is not yet included in the existing release
