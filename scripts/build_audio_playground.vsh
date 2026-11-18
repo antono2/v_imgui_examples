@@ -29,6 +29,19 @@ fn env_or(name string, fallback string) string {
 	return if value == '' { fallback } else { value }
 }
 
+fn find_tool(name string) !string {
+	// V 0.5.2 appends a Windows suffix even to absolute paths passed to PATH lookup.
+	path := if os.is_abs_path(name) || name.contains(os.path_separator) {
+		os.abs_path(name)
+	} else {
+		os.find_abs_path_of_executable(name) or { return error('Missing executable: ${name}') }
+	}
+	if !os.is_file(path) || !os.is_executable(path) {
+		return error('Missing executable: ${name}')
+	}
+	return path
+}
+
 fn prerequisites() !Tools {
 	windows := os.user_os() == 'windows'
 	tools := Tools{
@@ -41,7 +54,7 @@ fn prerequisites() !Tools {
 	} else {
 		'pkg-config'
 	}] {
-		os.find_abs_path_of_executable(tool) or {
+		find_tool(tool) or {
 			return error('Missing ${tool}. See docs/audio-playground.md.')
 		}
 	}
@@ -52,9 +65,7 @@ fn prerequisites() !Tools {
 }
 
 fn run(argv []string, environment map[string]string) ! {
-	executable_path := os.find_abs_path_of_executable(argv[0]) or {
-		return error('Missing executable: ${argv[0]}')
-	}
+	executable_path := find_tool(argv[0])!
 	mut process := os.new_process(executable_path)
 	process.set_args(argv[1..])
 	process.set_environment(environment)
@@ -128,8 +139,9 @@ endif()
 ')!
 	native := os.join_path(imgui, 'build', 'audio-playground')
 	mut command := ['cmake', '-S', imgui, '-B', native, '-DCMAKE_BUILD_TYPE=Release',
-		'-DCMAKE_C_COMPILER=${tools.cc}', '-DCMAKE_CXX_COMPILER=${tools.cxx}', '-DVIMGUI_OUTPUT_DIR=${os.join_path(imgui, 'lib')}',
-		'-DCIMGUI_NO_EXPORT=OFF', '-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON', '-DVulkan_DIR=${config}']
+		'-DCMAKE_C_COMPILER=${tools.cc}', '-DCMAKE_CXX_COMPILER=${tools.cxx}',
+		'-DVIMGUI_OUTPUT_DIR=${os.join_path(imgui, 'lib')}', '-DCIMGUI_NO_EXPORT=OFF',
+		'-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON', '-DVulkan_DIR=${config}']
 	if os.user_os() == 'windows' {
 		command << ['-G', 'Ninja', '-DVIMGUI_GLFW_PROVIDER=bundled', '-DVIMGUI_GLFW_VERSION=3.4']
 	} else {
@@ -179,7 +191,7 @@ fn replace_binary(staging string, destination string) ! {
 fn copy_windows_runtime(imgui string, native string, cc string, destination string) ! {
 	mut libraries := os.walk_ext(os.join_path(imgui, 'lib'), '.dll')
 	libraries << os.walk_ext(native, 'glfw3.dll')
-	compiler := os.find_abs_path_of_executable(cc) or { return error('Missing compiler ${cc}') }
+	compiler := find_tool(cc)!
 	for name in windows_runtime_dlls {
 		path := os.join_path(os.dir(compiler), name)
 		if os.is_file(path) {
