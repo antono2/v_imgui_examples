@@ -32,11 +32,15 @@ GLFW_INCLUDE=/usr/include GLFW_LIB=/usr/lib/x86_64-linux-gnu v run scripts/test_
 These checks render real ImGui frames without a GPU or platform window. Android
 IME input and native accessibility adapter interactions remain separate checks.
 
-Local Linux smoke check, after building the three desktop executables:
+After building the desktop examples, run the Linux rendering smoke check:
 
 ```sh
-scripts/smoke_desktop.sh "$PWD/build"
+v run scripts/smoke_desktop.vsh "$PWD/build"
 ```
+
+Install Xvfb, Lavapipe, and Vulkan validation layers. The command accepts a
+directory with the individual executables or the packaged `examples` launcher
+and writes a log per example under `smoke-logs/` in that directory.
 
 ## Desktop interaction
 
