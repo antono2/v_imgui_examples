@@ -30,7 +30,7 @@ controls, high contrast and text sizing. Choose **Docking** unless you specifica
 want the Standard variant.
 
 - **Windows:** extract the ZIP and open `examples.exe` to choose an example.
-- **Linux:** extract the ZIP and run `./run.sh` for the example menu.
+- **Linux:** extract the ZIP and run `./examples` for the example menu.
 - **Android:** install the universal APK and open **V ImGui Touch Examples**.
 
 In the release desktop examples, **Escape** quits when a control is not using it to
