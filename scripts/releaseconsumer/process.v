@@ -5,7 +5,10 @@ import os
 
 pub fn run_tool(program string, args []string) ! {
 	path := os.find_abs_path_of_executable(program)!
-	mut child := os.new_process(path)
+	if !os.is_file(path) {
+		return error('Executable is missing: ${path}')
+	}
+	mut child := os.new_process(os.real_path(path))
 	defer { child.close() }
 	child.set_args(args)
 	child.run()

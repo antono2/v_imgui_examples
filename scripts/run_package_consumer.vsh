@@ -60,7 +60,8 @@ fn consume(platform string, directory string, archive string, checksums bool) ! 
 	if checksums {
 		args << ['--checksums', sum]
 	}
-	releaseconsumer.run_tool(@VEXE, args)!
+	// Resolve the runner's v.exe explicitly on the Windows PATH.
+	releaseconsumer.run_tool('v', args)!
 }
 
 fn run(args []string) ! {
