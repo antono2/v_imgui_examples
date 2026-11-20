@@ -66,7 +66,8 @@ fn (test TestRun) launch(executable string, args []string, env map[string]string
 	captured := diagnostics.str()
 	print(captured)
 	lower := captured.to_lower_ascii()
-	if child.code != exit_code || ['vuid-', 'validation error', 'segmentation', 'assert', 'fatal'].any(lower.contains(it)) {
+	if child.code != exit_code
+		|| ['vuid-', 'validation error', 'segmentation', 'assert', 'fatal'].any(lower.contains(it)) {
 		return error('${name} failed (exit ${child.code}); see ${log_path}')
 	}
 	if expected != '' && !captured.contains(expected) {
@@ -102,8 +103,8 @@ fn runtime_environment(home string) map[string]string {
 	for key in env.keys() {
 		if key.to_upper_ascii() in ['VULKAN_SDK', 'VMODULES', 'VEXE', 'V_BIN', 'VTMP', 'GLFW_INCLUDE',
 			'GLFW_LIB', 'IMGUI_DIR', 'LIB', 'LIBPATH', 'INCLUDE', 'LD_LIBRARY_PATH', 'LD_PRELOAD',
-			'PYTHONPATH', 'PATH', 'HOME', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'APPDATA', 'LOCALAPPDATA',
-			'USERPROFILE'] {
+			'PYTHONPATH', 'PATH', 'HOME', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'APPDATA',
+			'LOCALAPPDATA', 'USERPROFILE'] {
 			env.delete(key)
 		}
 	}
@@ -130,8 +131,11 @@ fn run_torus(test TestRun, package string, env map[string]string) ! {
 	}
 	test.launch(launcher, ['--headless', '--ticks', headless_ticks, '--no-sound', '--volume', '0'],
 		env, 'headless', if windows { '' } else { 'checksum=490efd84cf12692f' }, 0)!
-	test.launch(launcher, ['--probe', '--no-sound', '--volume', '0'], env, 'vulkan-probe',
-		if windows { '' } else { 'GLFW: Vulkan surface creation succeeded' }, 0)!
+	test.launch(launcher, ['--probe', '--no-sound', '--volume', '0'], env, 'vulkan-probe', if windows {
+		''
+	} else {
+		'GLFW: Vulkan surface creation succeeded'
+	}, 0)!
 	// The error exit still verifies the GUI-subsystem executable on Windows, where it has no console.
 	test.launch(launcher, ['--resolution', 'invalid'], env, 'invalid-resolution', '', 2)!
 }
@@ -158,7 +162,31 @@ fn run_imgui(test TestRun, package string, mut env map[string]string) ! {
 	}
 }
 
+fn run_ubuntu_runtime(args []string) ! {
+	if os.user_os() != 'linux' || !os.is_file('/.dockerenv') {
+		return error('The Ubuntu runtime setup requires the package consumer container.')
+	}
+	releaseconsumer.run_tool('apt-get', ['update'])!
+	releaseconsumer.run_tool('apt-get', ['install', '-y', '--no-install-recommends', 'xvfb', 'xauth',
+		'mesa-vulkan-drivers', 'libvulkan1', 'vulkan-validationlayers'])!
+	for tool in ['v', 'cmake', 'cc'] {
+		if _ := os.find_abs_path_of_executable(tool) {
+			return error('Runtime container unexpectedly contains ${tool}')
+		}
+	}
+	if os.exec(['dpkg-query', '-W', 'libglfw3']).exit_code == 0 {
+		return error('Runtime container unexpectedly contains system GLFW')
+	}
+	os.setenv('VK_INSTANCE_LAYERS', 'VK_LAYER_KHRONOS_validation', true)
+	mut invocation := ['--kill-after=10s', '8m', 'xvfb-run', '-a', os.executable()]
+	invocation << args
+	releaseconsumer.run_tool('timeout', invocation)!
+}
+
 fn run(args []string) ! {
+	if args.len > 1 && args[0] == '--ubuntu-runtime' {
+		return run_ubuntu_runtime(args[1..])
+	}
 	mut parser := flag.new_flag_parser(args)
 	parser.application('test_release_package')
 	parser.description('Launch a relocated desktop package with runtime-only dependencies.')
@@ -211,7 +239,11 @@ fn run(args []string) ! {
 		os.cp(os.abs_path(loader), os.join_path(runtime, 'vulkan-1.dll'))!
 		env['PATH'] += os.path_delimiter + runtime
 	}
-	test := TestRun{ cwd: cwd, logs: logs, timeout: seconds * time.second }
+	test := TestRun{
+		cwd:     cwd
+		logs:    logs
+		timeout: seconds * time.second
+	}
 	if project == 'torus' {
 		run_torus(test, package, env)!
 	} else {

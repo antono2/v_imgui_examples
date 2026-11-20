@@ -30,7 +30,9 @@ jobs:
         with:
           sparse-checkout: |
             scripts/test_release_package.vsh
+            scripts/run_package_consumer.vsh
             scripts/releaseconsumer/archive.v
+            scripts/releaseconsumer/process.v
             scripts/compatibility.vsh
             compatibility.json
             v.mod
@@ -44,46 +46,18 @@ jobs:
         shell: bash
         run: v run scripts/compatibility.vsh --github-output "$GITHUB_OUTPUT"
       - name: Download published package and checksums
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name || 'latest' }}
-          ASSET_PATTERN: 'v-imgui-examples-${{ matrix.platform }}-x64-${{ matrix.variant }}.zip'
-        run: |
-          args=()
-          if [[ "$RELEASE_TAG" != latest ]]; then args+=("$RELEASE_TAG"); fi
-          gh release download "${args[@]}" --repo antono2/v_imgui_examples --pattern "$ASSET_PATTERN" --pattern SHA256SUMS.txt --dir downloads
+        run: v run scripts/run_package_consumer.vsh download ${{ matrix.platform }} ${{ matrix.variant }}
       - name: Install Windows software Vulkan driver
         if: runner.os == 'Windows'
         uses: antono2/vulkan/.github/actions/setup-vulkan-ci@04620525bab9fd843ad3b9046171aaff4dfe3d3c
         with:
           sdk-version: ${{ steps.compat.outputs.ci_sdk }}
           artifact-tag: ${{ steps.compat.outputs.ci_runtime }}
-      - name: Test Windows package with runtime-only environment
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $Archives = @(Get-ChildItem downloads -Filter '*.zip')
-          if ($Archives.Count -ne 1) { throw 'Expected exactly one package archive' }
-          v run scripts/test_release_package.vsh $Archives[0].FullName --project imgui --checksums downloads/SHA256SUMS.txt --logs package-smoke-logs
-          if ($LASTEXITCODE -ne 0) { throw 'Windows package consumer failed' }
-      - name: Test Linux package in a runtime-only Ubuntu container
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir -p package-smoke-logs
-          v -cc gcc -skip-running -o ./test-release-package scripts/test_release_package.vsh
-          docker run --rm --init -v "$PWD:/consumer" -w /consumer ubuntu:24.04 bash -euxc '
-            apt-get update
-            apt-get install -y --no-install-recommends xvfb xauth mesa-vulkan-drivers libvulkan1 vulkan-validationlayers
-            if command -v v; then exit 1; fi
-            if command -v cmake; then exit 1; fi
-            if command -v cc; then exit 1; fi
-            if dpkg-query -W libglfw3 2>/dev/null; then exit 1; fi
-            mapfile -t archives < <(find downloads -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" \))
-            test "${#archives[@]}" -eq 1
-            VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation timeout --kill-after=10s 8m xvfb-run -a ./test-release-package "${archives[0]}" --project imgui --checksums downloads/SHA256SUMS.txt --logs package-smoke-logs
-          '
+      - name: Test the desktop package with runtime-only dependencies
+        run: v run scripts/run_package_consumer.vsh test ${{ matrix.platform }} ${{ matrix.variant }} --checksums
       - name: Preserve consumer logs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
