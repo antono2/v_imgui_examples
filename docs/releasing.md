@@ -46,6 +46,9 @@ upload them as release assets. Use the same signing identity for updates.
 The private key uses the same password as the keystore.
 Increment `android:versionCode` and update `android:versionName` whenever publishing newly built Android APKs.
 
+For newly built APKs, record the Android host commit from `imgui_android` in
+`compatibility.json` in `BUILD-PROVENANCE.txt`.
+
 Test the final universal APK on a device, including the installation/update
 path. Review [the testing checklist](testing.md) and package instructions.
 Generate `SHA256SUMS.txt` from the final ZIP and APK files. Tag the verified

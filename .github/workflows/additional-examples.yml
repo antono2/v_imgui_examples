@@ -94,19 +94,13 @@ jobs:
         with:
           packages: platform-tools
       - name: Install Android toolchain
-        run: |
-          sdkmanager --install 'ndk;27.3.13750724' 'platforms;android-36' 'build-tools;36.0.0'
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724" >> "$GITHUB_ENV"
+        run: v run scripts/android_ci.vsh install
       - name: Package external V UI with upstream host
         run: |
           v -check scripts/test_android_accessibility.vsh
           v run scripts/build_android.vsh --build-only
       - name: Verify package and exported UI
-        run: |
-          apk="build/android-touch-$ANDROID_ABI/vimgui-demo-$ANDROID_ABI.apk"
-          "$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt" dump badging "$apk" | tee build/apk-badging.txt
-          grep -q "package: name='io.antono2.vimgui.examples.touch'" build/apk-badging.txt
-          "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm" -D "build/android-touch-$ANDROID_ABI/libvimgui_android_ui.so" | grep vimgui_android_demo_draw_ui
+        run: v run scripts/android_ci.vsh verify
       - name: Upload test APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
