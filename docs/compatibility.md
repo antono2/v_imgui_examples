@@ -22,8 +22,11 @@ exit after bounded frame counts; the dashboard wraps its history buffer after
 660 frames. A clean user directory and runtime-only PATH prevent developer
 configuration from supplying application dependencies. Logs are preserved.
 
-Linux uses a fresh Ubuntu 24.04 container with Python, Xvfb and Vulkan runtime
-tools, without V, CMake, a C compiler or system GLFW. Windows uses a separate
+Linux runs the compiled V consumer in a fresh Ubuntu 24.04 Docker container
+with Xvfb and Vulkan runtime libraries. The container mounts only the verifier,
+downloaded packages and a log directory. The verifier enforces a runtime-only
+environment before launching the examples, checking for V, CMake, a C compiler
+and system GLFW. Windows uses a separate
 hosted VM with build variables removed; operating-system components remain.
 CI uses software Vulkan. Physical GPU and manual accessibility validation are
 separate release checks.
@@ -38,6 +41,12 @@ v run scripts/test_release_package.vsh PACKAGE.zip --project imgui --checksums S
 
 On Linux, run inside `xvfb-run -a` when there is no desktop session. Both published
 Windows v1.0.1 variants passed this test on the audit machine's physical GPU.
+To run the GitHub download and Docker workflow locally on Linux:
+
+```sh
+RELEASE_TAG=v1.0.1 v run scripts/run_package_consumer.vsh download linux docking
+v run scripts/run_package_consumer.vsh test linux docking --checksums
+```
 
 ## Read-only diagnostics
 
