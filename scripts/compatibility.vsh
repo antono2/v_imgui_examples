@@ -5,7 +5,7 @@ import rand
 import x.json2
 
 const immutable_fields = ['v', 'vc', 'tcc', 'linux_vc', 'linux_tcc', 'headers', 'volk', 'v3_v',
-	'v3_vc']
+	'v3_vc', 'imgui_android']
 const required_fields = ['v', 'vc', 'modules', 'glfw', 'ci_sdk', 'ci_runtime']
 
 @[params]

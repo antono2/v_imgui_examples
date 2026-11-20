@@ -127,9 +127,16 @@ and resume state. Repeat with the final release APK and test portrait/landscape,
 visible system navigation bars and IME. Check TalkBack spoken navigation manually;
 provider action tests do not establish the quality of spoken announcements.
 
-With the Android SDK and NDK installed, use the V revision from
-`compatibility.json` to build the accessibility-enabled debug APK and run its
-instrumentation on the selected device:
+The Android build uses the `imgui_android` commit from `compatibility.json`
+for ImGui's V build entry point. It defaults to
+`build/android-host/antono2/imgui`. Set `IMGUI_DIR` to reuse a checkout
+of that exact commit.
+
+Install a JDK, CMake, Ninja and the Android SDK and NDK. CI uses JDK 17 and
+installs the Android packages with `v run scripts/android_ci.vsh install`.
+Set `ANDROID_NDK_HOME` to the installed NDK for a local build. Use the V
+revision from `compatibility.json` to build the accessibility-enabled debug APK
+and run its instrumentation on the selected device.
 
 ```sh
 ANDROID_ABI=x86_64 VIMGUI_ANDROID_APPLICATION_UI=1 v run scripts/build_android.vsh --build-only
@@ -142,6 +149,7 @@ corresponding `build/android-touch-ABI` directory by default.
 
 | Environment variable | Use |
 | --- | --- |
+| `JAVAC` | Select the Java compiler if `javac` is outside your PATH. |
 | `VIMGUI_ANDROID_BUILD_DIR` | Use the same custom build directory for the APK and instrumentation. |
 | `VIMGUI_ANDROID_TEST_APK` | Test a signed release APK in place of the debug APK. |
 | `VIMGUI_ANDROID_TEST_KEYSTORE` | Sign the instrumentation APK with the app's certificate. |

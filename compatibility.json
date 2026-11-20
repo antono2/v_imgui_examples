@@ -7,6 +7,7 @@
   "glfw": "3.4",
   "ci_sdk": "1.4.309.0",
   "ci_runtime": "v1.2",
+  "imgui_android": "98df0e41e7eb929b63fbdddecbdaa65799a7199e",
   "imgui_standard": "v0.4.0-standard",
   "modules": {
     "imgui": "v0.3.1",
