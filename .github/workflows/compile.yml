@@ -82,15 +82,12 @@ jobs:
       - name: Build native ImGui library
         working-directory: source/modules/antono2/imgui
         run: v run build_vimgui.vsh --linkage shared --glfw system
-      - name: Compile GLFW/Vulkan example
+      - name: Compile desktop examples
         run: |
           v -check-syntax source/demo/setup.vsh
           ./source/demo/setup.vsh --help
-          for example in glfw_vulkan widget_gallery implot_dashboard; do
-            source=source/demo
-            if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi
-            v -no-memory-limit -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc -o "$RUNNER_TEMP/$example" "$source"
-          done
+          v run source/demo/scripts/build_desktop.vsh --output "$RUNNER_TEMP" -no-memory-limit \
+            -path "$GITHUB_WORKSPACE/source/modules/antono2|@vlib|@vmodules" -cc gcc
       - name: Render desktop examples with Vulkan validation
         run: v run source/demo/scripts/smoke_desktop.vsh "$RUNNER_TEMP"
       - name: Check native window startup recovery
@@ -316,11 +313,8 @@ jobs:
       - name: Verify the declared dependency graph
         shell: bash
         run: v run source/demo/scripts/check_installed_deps.vsh
-      - name: Check demo with V3
-        run: |
-          for source in source/demo source/demo/examples/widget_gallery source/demo/examples/implot_dashboard; do
-            v -new-compiler -check -path "$VMODULES/antono2|@vlib|@vmodules" "$source"
-          done
+      - name: Check desktop examples with V3
+        run: v run source/demo/scripts/build_desktop.vsh --check -new-compiler -path "$VMODULES/antono2|@vlib|@vmodules"
 
   linux-v-master:
     name: Advisory current V master and dependency masters
@@ -380,16 +374,13 @@ jobs:
             "https://raw.githubusercontent.com/zeux/volk/$volk_commit/volk.h" \
             --output "$RUNNER_TEMP/volk.h"
           sudo install -m 0644 "$RUNNER_TEMP/volk.h" "$VULKAN_SDK/include/volk.h"
-      - name: Build and compile demo with V3
+      - name: Build native ImGui library
+        working-directory: source/modules/antono2/imgui
+        run: v run build_vimgui.vsh --linkage shared --glfw system
+      - name: Build and render desktop examples with V3
         run: |
-          cd source/modules/antono2/imgui
-          v run build_vimgui.vsh --linkage shared --glfw system
-          cd "$GITHUB_WORKSPACE"
-          for example in glfw_vulkan widget_gallery implot_dashboard; do
-            source=source/demo
-            if [ "$example" != glfw_vulkan ]; then source="source/demo/examples/$example"; fi
-            v -new-compiler -no-memory-limit -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc -o "$RUNNER_TEMP/$example" "$source"
-          done
+          v run source/demo/scripts/build_desktop.vsh --output "$RUNNER_TEMP" -new-compiler -no-memory-limit \
+            -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc
           v run source/demo/scripts/smoke_desktop.vsh "$RUNNER_TEMP"
 
   required-checks:
