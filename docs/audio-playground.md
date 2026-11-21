@@ -20,7 +20,9 @@ Prerequisites:
   loader and MoltenVK. Compilation alone does not verify presentation.
 - Windows: Git, CMake, Ninja and a MinGW-w64 GCC/G++ toolchain on PATH.
   The build prepares GLFW and copies runtime DLLs beside the executable. Running
-  requires a Vulkan-capable graphics driver.
+  requires a Vulkan-capable graphics driver. On hosted Windows runners,
+  `--ci` selects the prefixed MinGW GCC/G++ executables and the `ar.exe`
+  beside GCC.
 
 Pins are in [`dependencies.json`](../examples/audio_playground/dependencies.json).
 CMake receives a headers-only Vulkan package; a Vulkan SDK is not needed to compile.

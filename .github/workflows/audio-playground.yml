@@ -33,17 +33,6 @@ jobs:
       - name: macOS dependencies
         if: runner.os == 'macOS'
         run: brew install cmake pkg-config glfw
-      - name: Windows compiler
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $cc = (Get-Command x86_64-w64-mingw32-gcc.exe -ErrorAction Stop).Source
-          $cxx = (Get-Command x86_64-w64-mingw32-g++.exe -ErrorAction Stop).Source
-          $directory = Split-Path $cc
-          "ANTONO2_AUDIO_V_CC=$cc" >> $env:GITHUB_ENV
-          "ANTONO2_AUDIO_AR=$(Join-Path $directory 'ar.exe')" >> $env:GITHUB_ENV
-          "CXX=$cxx" >> $env:GITHUB_ENV
-          $directory >> $env:GITHUB_PATH
       - uses: prantlf/setup-v-action@92f20bea50d2c9931a28c96bb4997a3c7357baf0 # v4
         with:
           version: 0.5.2
@@ -51,7 +40,7 @@ jobs:
       - name: Verify bundled chime against generated PCM
         run: v run scripts/generate_audio_chime.vsh --check
       - name: Build native audio, ImGui example and state tests
-        run: v run scripts/build_audio_playground.vsh --test-model
+        run: v run scripts/build_audio_playground.vsh --ci --test-model
       - name: Stable action geometry and frame-synchronized native input
         if: runner.os == 'Linux'
         run: build/audio/toolchain/v/v-audio -cc cc -gc none run tests/desktop/audio_input_geometry.vsh

@@ -11,6 +11,10 @@ fn C.MoveFileExW(source &u16, destination &u16, flags u32) int
 
 const windows_runtime_dlls = ['libstdc++-6.dll', 'libgcc_s_seh-1.dll', 'libwinpthread-1.dll']
 const native_build_jobs = '2'
+// Give the self-built Windows compatibility compiler a 32 MiB stack.
+const windows_bootstrap_stack_bytes = 32 * 1024 * 1024
+const ci_mingw_gcc = 'x86_64-w64-mingw32-gcc.exe'
+const ci_mingw_gxx = 'x86_64-w64-mingw32-g++.exe'
 
 struct Pins {
 	v       string
@@ -40,6 +44,18 @@ fn find_tool(name string) !string {
 		return error('Missing executable: ${name}')
 	}
 	return path
+}
+
+fn configure_ci_mingw() ! {
+	cc := find_tool(ci_mingw_gcc)!
+	cxx := find_tool(ci_mingw_gxx)!
+	bin := os.dir(cc)
+	ar := find_tool(os.join_path(bin, 'ar.exe'))!
+	os.setenv('ANTONO2_AUDIO_V_CC', cc, true)
+	os.setenv('ANTONO2_AUDIO_AR', ar, true)
+	os.setenv('CXX', cxx, true)
+	// Let the compiler and its children resolve runtime tools from the selected distribution.
+	os.setenv('PATH', bin + os.path_delimiter + os.getenv('PATH'), true)
 }
 
 fn prerequisites() !Tools {
@@ -115,7 +131,7 @@ fn prepare_compiler(root string, pins Pins, tools Tools, environment map[string]
 		mut command := [tools.cc, '-DCUSTOM_DEFINE_v1_fallback', '-w', '-o', compiler]
 		if windows {
 			command << ['-std=c99', '-municode', os.join_path(bootstrap, 'v_win.c'), '-ladvapi32',
-				'-lws2_32', '-lbcrypt', '-Wl,--stack=33554432']
+				'-lws2_32', '-lbcrypt', '-Wl,--stack=${windows_bootstrap_stack_bytes}']
 		} else {
 			command << ['-std=gnu11', os.join_path(bootstrap, 'v.c'), '-lm', '-lpthread']
 		}
@@ -272,6 +288,7 @@ fn run_cli(args []string) ! {
 	modules := parser.string('modules', 0, os.join_path(root, 'build', 'audio', 'modules'),
 		'module checkout root')
 	compiler := parser.string('compiler', 0, '', 'explicit compatibility compiler')
+	ci := parser.bool('ci', 0, false, 'use the hosted MinGW toolchain on Windows')
 	check := parser.bool('check', 0, false, 'check local prerequisites without downloads')
 	launch := parser.bool('run', 0, false, 'launch the finished example')
 	test_model := parser.bool('test-model', 0, false, 'load the executable and run its model tests')
@@ -281,6 +298,9 @@ fn run_cli(args []string) ! {
 	}
 	if parser.finalize()!.len != 0 {
 		return error('unexpected positional arguments')
+	}
+	if ci && os.user_os() == 'windows' {
+		configure_ci_mingw()!
 	}
 	tools := prerequisites()!
 	if check {
