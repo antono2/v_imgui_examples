@@ -1,4 +1,5 @@
 // Launch a relocated desktop package with a clean user and runtime-only PATH.
+import desktopsettings
 import flag
 import os
 import rand
@@ -7,9 +8,11 @@ import strconv
 import strings
 import time
 
-const headless_ticks = '600'
-const example_frames = '60'
-const dashboard_frames = '660' // Allow the dashboard's full history and resize smoke sequence.
+const headless_ticks = 600
+// Expected from the published Linux Torus demo after the headless simulation.
+const torus_headless_checksum = '490efd84cf12692f'
+const invalid_cli_argument_status = 2
+const initial_diagnostics_capacity = 1024
 const process_poll = 10 * time.millisecond
 
 struct TestRun {
@@ -34,7 +37,7 @@ fn (test TestRun) launch(executable string, args []string, env map[string]string
 	child.use_pgroup = true
 	child.run()
 	defer { child.close() }
-	mut diagnostics := strings.new_builder(1024)
+	mut diagnostics := strings.new_builder(initial_diagnostics_capacity)
 	timer := time.new_stopwatch()
 	for {
 		live := child.is_alive()
@@ -129,15 +132,15 @@ fn run_torus(test TestRun, package string, env map[string]string) ! {
 	$if !windows {
 		os.chmod(launcher, 0o755)!
 	}
-	test.launch(launcher, ['--headless', '--ticks', headless_ticks, '--no-sound', '--volume', '0'],
-		env, 'headless', if windows { '' } else { 'checksum=490efd84cf12692f' }, 0)!
+	test.launch(launcher, ['--headless', '--ticks', headless_ticks.str(), '--no-sound', '--volume',
+		'0'], env, 'headless', if windows { '' } else { 'checksum=${torus_headless_checksum}' }, 0)!
 	test.launch(launcher, ['--probe', '--no-sound', '--volume', '0'], env, 'vulkan-probe', if windows {
 		''
 	} else {
 		'GLFW: Vulkan surface creation succeeded'
 	}, 0)!
 	// The error exit still verifies the GUI-subsystem executable on Windows, where it has no console.
-	test.launch(launcher, ['--resolution', 'invalid'], env, 'invalid-resolution', '', 2)!
+	test.launch(launcher, ['--resolution', 'invalid'], env, 'invalid-resolution', '', invalid_cli_argument_status)!
 }
 
 fn run_imgui(test TestRun, package string, mut env map[string]string) ! {
@@ -151,12 +154,12 @@ fn run_imgui(test TestRun, package string, mut env map[string]string) ! {
 		}
 	}
 	test.launch(menu, ['--help'], env, 'launcher-help', 'Usage:', 0)!
-	test.launch(menu, ['unknown_example'], env, 'invalid-example', 'Unknown example:', 2)!
+	test.launch(menu, ['unknown_example'], env, 'invalid-example', 'Unknown example:', invalid_cli_argument_status)!
 	for example in examples {
 		env['VIMGUI_SMOKE_FRAMES'] = if example == 'implot_dashboard' {
-			dashboard_frames
+			desktopsettings.dashboard_smoke_frames.str()
 		} else {
-			example_frames
+			desktopsettings.standard_smoke_frames.str()
 		}
 		test.launch(menu, [example], env, example, '', 0)!
 	}

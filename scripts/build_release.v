@@ -9,6 +9,9 @@ import os
 import release_tools
 import json2
 
+// Cap parallel native compiler jobs on shared runners.
+const native_build_parallel_jobs = 4
+
 struct Compatibility {
 	glfw string
 }
@@ -75,7 +78,7 @@ fn run() ! {
 	release_tools.command('cmake', ['-S', imgui, '-B', native_directory, '-DVIMGUI_APPLICATION_UI=ON',
 		'-DVIMGUI_OUTPUT_DIR=' + os.join_path(imgui, 'lib')])!
 	release_tools.command('cmake', ['--build', native_directory, '--config', 'Release', '--parallel',
-		'4'])!
+		native_build_parallel_jobs.str()])!
 	binaries := os.join_path(root, 'build', 'release-binaries-' + variant)
 	os.mkdir_all(binaries)!
 	mut flags := ['-d', 'release_accessibility', '-d', 'appui_embedded', '-no-memory-limit']
