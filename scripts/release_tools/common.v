@@ -3,6 +3,27 @@
 module release_tools
 
 import os
+import json2
+
+struct Compatibility {
+	glfw string
+}
+
+pub fn glfw_pin(root string) !string {
+	pins := json2.decode[Compatibility](os.read_file(os.join_path(root, 'compatibility.json'))!)!
+	return pins.glfw
+}
+
+pub fn find_file(root string, names []string, containing string) !string {
+	mut files := os.walk_ext(root, '')
+	files.sort()
+	for file in files {
+		if os.file_name(file) in names && file.contains(containing) {
+			return file
+		}
+	}
+	return error('Missing build output ${names} in ${root}')
+}
 
 fn executable(program string) !string {
 	if os.is_file(program) {

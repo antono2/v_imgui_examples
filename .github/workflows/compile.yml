@@ -168,11 +168,8 @@ jobs:
           repository: vlang/vc
           ref: ${{ steps.compat.outputs.vc }}
           path: toolchain/v/vc
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          repository: zeux/volk
-          ref: ${{ steps.compat.outputs.volk }}
-          path: source/third_party/volk
+      - name: Set up MSVC x64
+        uses: antono2/vulkan/.github/actions/setup-msvc@23ec75dc6015776f3012880148ca90e66f63010a
       - name: Build official V compiler
         shell: cmd
         working-directory: toolchain/v
@@ -184,66 +181,14 @@ jobs:
       - name: Verify the declared dependency graph
         shell: bash
         run: v run source/demo/scripts/check_installed_deps.vsh
-      - name: Install Vulkan SDK and SwiftShader test artifacts
-        uses: antono2/vulkan/.github/actions/setup-vulkan-ci@04620525bab9fd843ad3b9046171aaff4dfe3d3c
+      - name: Install Vulkan SDK, SwiftShader and matching Volk
+        uses: antono2/vulkan/.github/actions/setup-vulkan-ci@23ec75dc6015776f3012880148ca90e66f63010a
         with:
           sdk-version: ${{ steps.compat.outputs.ci_sdk }}
           artifact-tag: ${{ steps.compat.outputs.ci_runtime }}
-      - name: Install matching Volk header
-        shell: pwsh
-        run: |
-          $Destination = Join-Path $env:VULKAN_SDK 'Include\volk'
-          New-Item -ItemType Directory -Force $Destination | Out-Null
-          Copy-Item source/third_party/volk/volk.h, source/third_party/volk/volk.c $Destination
-      - name: Build native libraries and compile the example
-        shell: pwsh
-        run: |
-          $VsWhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-          $InstallPath = & $VsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          if (-not $InstallPath) { throw 'Visual Studio C++ tools were not found' }
-          Import-Module (Join-Path $InstallPath 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll')
-          Enter-VsDevShell -VsInstallPath $InstallPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
-
-          $ImguiRoot = Join-Path $env:GITHUB_WORKSPACE 'source\modules\antono2\imgui'
-          v -check-syntax (Join-Path $env:GITHUB_WORKSPACE 'source\demo\setup.vsh')
-          v run (Join-Path $ImguiRoot 'build_vimgui.vsh') --linkage shared --glfw bundled --glfw-version 3.4
-          if ($LASTEXITCODE -ne 0) { throw 'Could not build the native ImGui library' }
-
-          $NativeBuild = Join-Path $ImguiRoot 'build\shared-bundled-3.4'
-          $GlfwHeader = Get-ChildItem $NativeBuild -Recurse -Filter 'glfw3.h' |
-            Where-Object { $_.FullName -match 'glfw-src.*include.GLFW' } | Select-Object -First 1
-          $GlfwLibrary = Get-ChildItem $NativeBuild -Recurse -Include 'glfw3dll.lib', 'glfw3.lib' | Select-Object -First 1
-          $GlfwDll = Get-ChildItem $NativeBuild -Recurse -Filter 'glfw3.dll' | Select-Object -First 1
-          $VimguiDll = Get-ChildItem (Join-Path $ImguiRoot 'lib') -Recurse -Filter 'vimgui.dll' | Select-Object -First 1
-          if (-not $GlfwHeader -or -not $GlfwLibrary -or -not $GlfwDll -or -not $VimguiDll) {
-            throw 'The native build did not produce all required Windows artifacts'
-          }
-
-          $LinkDirectory = Join-Path $env:RUNNER_TEMP 'link'
-          New-Item -ItemType Directory -Force $LinkDirectory | Out-Null
-          Copy-Item $GlfwLibrary.FullName (Join-Path $LinkDirectory 'glfw3.lib')
-          $env:GLFW_INCLUDE = Split-Path -Parent (Split-Path -Parent $GlfwHeader.FullName)
-          $env:GLFW_LIB = $LinkDirectory
-          $Executable = Join-Path $env:RUNNER_TEMP 'v_imgui_demo.exe'
-          $ModulePath = "$env:GITHUB_WORKSPACE\source\modules\antono2|@vlib|@vmodules"
-          $Output = Join-Path $env:RUNNER_TEMP 'examples'
-          New-Item -ItemType Directory -Force $Output | Out-Null
-          foreach ($Example in @('glfw_vulkan', 'widget_gallery', 'implot_dashboard')) {
-            $Source = if ($Example -eq 'glfw_vulkan') { 'source/demo' } else { "source/demo/examples/$Example" }
-            $Executable = Join-Path $Output "$Example.exe"
-            if ($Example -eq 'glfw_vulkan') {
-              v run source/demo/setup.vsh --build-only --example glfw_vulkan
-              if ($LASTEXITCODE -ne 0) { throw 'The Windows guided setup build failed' }
-              Copy-Item (Join-Path $ImguiRoot 'build\windows-demo\glfw_vulkan.exe') $Executable
-            } else {
-              v -no-memory-limit -path $ModulePath -cc msvc -o $Executable $Source
-              if ($LASTEXITCODE -ne 0) { throw "The Windows $Example did not compile" }
-            }
-          }
-          Copy-Item $GlfwDll.FullName, $VimguiDll.FullName $Output -Force
-          foreach ($Artifact in @($Executable, $GlfwDll.FullName, $VimguiDll.FullName)) {
-            if (-not (Test-Path $Artifact)) { throw "Missing Windows artifact: $Artifact" }
-          }
+          volk-revision: ${{ steps.compat.outputs.volk }}
+      - name: Build and compile Windows examples
+        run: v run source/demo/scripts/build_windows_ci.vsh "$env:RUNNER_TEMP\examples"
 
       - name: Upload Windows examples
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

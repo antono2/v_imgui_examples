@@ -7,25 +7,9 @@ module main
 
 import os
 import release_tools
-import json2
 
 // Cap parallel native compiler jobs on shared runners.
 const native_build_parallel_jobs = 4
-
-struct Compatibility {
-	glfw string
-}
-
-fn find_file(root string, names []string, containing string) !string {
-	mut files := os.walk_ext(root, '')
-	files.sort()
-	for file in files {
-		if os.file_name(file) in names && file.contains(containing) {
-			return file
-		}
-	}
-	return error('Missing build output ${names} in ${root}')
-}
 
 fn main() {
 	run() or {
@@ -40,7 +24,7 @@ fn run() ! {
 	}
 	variant := os.args[1]
 	root := os.dir(os.dir(@FILE))
-	compatibility := json2.decode[Compatibility](os.read_file(os.join_path(root, 'compatibility.json'))!)!
+	glfw := release_tools.glfw_pin(root)!
 	imgui := if os.getenv('IMGUI_DIR') != '' {
 		os.getenv('IMGUI_DIR')
 	} else {
@@ -60,8 +44,8 @@ fn run() ! {
 	mut native_options := ['run', os.join_path(imgui, 'build_vimgui.vsh'), '--linkage', 'shared']
 	mut native_directory := ''
 	$if windows {
-		native_options << ['--glfw', 'bundled', '--glfw-version', compatibility.glfw]
-		native_directory = os.join_path(imgui, 'build', 'shared-bundled-${compatibility.glfw}')
+		native_options << ['--glfw', 'bundled', '--glfw-version', glfw]
+		native_directory = os.join_path(imgui, 'build', 'shared-bundled-${glfw}')
 		if os.getenv('VCToolsRedistDir') == '' {
 			return error('Load scripts/setup_windows_build.ps1 before running the builder')
 		}
@@ -84,8 +68,8 @@ fn run() ! {
 	mut flags := ['-d', 'release_accessibility', '-d', 'appui_embedded', '-no-memory-limit']
 	mut platform := ''
 	$if windows {
-		header := find_file(native_directory, ['glfw3.h'], 'glfw-src')!
-		library := find_file(native_directory, ['glfw3dll.lib', 'glfw3.lib'], '')!
+		header := release_tools.find_file(native_directory, ['glfw3.h'], 'glfw-src')!
+		library := release_tools.find_file(native_directory, ['glfw3dll.lib', 'glfw3.lib'], '')!
 		links := os.join_path(os.getenv('RUNNER_TEMP'), 'link')
 		os.mkdir_all(links)!
 		release_tools.copy(library, os.join_path(links, 'glfw3.lib'))!
@@ -93,8 +77,8 @@ fn run() ! {
 		os.setenv('GLFW_LIB', links, true)
 		flags << ['-path', os.join_path(root, 'build', 'modules', 'antono2') + '|@vlib|@vmodules',
 			'-cc', 'msvc']
-		release_tools.copy(find_file(native_directory, ['glfw3.dll'], '')!, os.join_path(binaries, 'glfw3.dll'))!
-		release_tools.copy(find_file(os.join_path(imgui, 'lib'), ['vimgui.dll'], '')!, os.join_path(binaries, 'vimgui.dll'))!
+		release_tools.copy(release_tools.find_file(native_directory, ['glfw3.dll'], '')!, os.join_path(binaries, 'glfw3.dll'))!
+		release_tools.copy(release_tools.find_file(os.join_path(imgui, 'lib'), ['vimgui.dll'], '')!, os.join_path(binaries, 'vimgui.dll'))!
 		platform = 'windows'
 	} $else {
 		flags << ['-cc', 'gcc']
