@@ -1,4 +1,5 @@
 #!/usr/bin/env -S v -prod run
+
 // Builds desktop examples and their native ImGui library for a selected variant.
 // Prepares the binary directory consumed by the separate release packager.
 
@@ -111,8 +112,9 @@ fn run() ! {
 	output := os.join_path(root, 'build', 'v-imgui-examples-${platform}-x64-${variant}')
 	release_tools.package_release(root, binaries, imgui, output, variant)!
 	$if linux {
-		release_tools.command('bash', [
-			os.join_path(root, 'scripts', 'smoke_desktop.sh'),
+		release_tools.command(compiler, [
+			'run',
+			os.join_path(root, 'scripts', 'smoke_desktop.vsh'),
 			output,
 		])!
 	}

@@ -16,9 +16,11 @@ APKs as release updates: their signing keys are temporary.
 
 The release helpers are V programs with shared build, packaging, license and
 ZIP code in `scripts/release_tools/`. From prepared dependencies, run
-`./scripts/build_release.v docking` (or `standard`) on Linux. On Windows
-first load `. scripts/setup_windows_build.ps1` in PowerShell to select Visual
-Studio, then use `v -prod run scripts/build_release.v docking`. For the other V
+`./scripts/build_release.v docking` (or `standard`) on Linux. The builder uses
+the same V compiler for the [rendering smoke check](testing.md#automated-checks)
+after packaging. On Windows first load `. scripts/setup_windows_build.ps1` in
+PowerShell to select Visual Studio, then use
+`v -prod run scripts/build_release.v docking`. For the other V
 helpers below, Windows also uses `v run` (or `v -prod run`) before the script path.
 To package existing binaries, use `./scripts/package_release.v
 binary-dir imgui-dir output-dir docking`. License collection uses
