@@ -33,6 +33,9 @@ runs:
       run: |
         make -C toolchain/v local=1
         echo "$GITHUB_WORKSPACE/toolchain/v" >> "$GITHUB_PATH"
+    - name: Set up MSVC x64
+      if: runner.os == 'Windows'
+      uses: antono2/vulkan/.github/actions/setup-msvc@23ec75dc6015776f3012880148ca90e66f63010a
     - if: runner.os == 'Windows'
       shell: cmd
       working-directory: toolchain/v

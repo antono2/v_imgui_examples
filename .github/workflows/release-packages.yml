@@ -55,25 +55,13 @@ jobs:
       - name: Install Linux build and rendering tools
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake libglfw3-dev libvulkan-dev libvulkan-volk-dev libdbus-1-dev libatk1.0-dev libatk-bridge2.0-dev libatspi2.0-dev libglib2.0-dev at-spi2-core dbus-x11 pkg-config mesa-vulkan-drivers vulkan-validationlayers ripgrep gdb xvfb patchelf zip xdotool openbox x11-utils x11-xserver-utils wmctrl
-      - name: Install Windows Vulkan build tools
+      - name: Install Windows Vulkan build tools and matching Volk
         if: runner.os == 'Windows'
-        uses: antono2/vulkan/.github/actions/setup-vulkan-ci@04620525bab9fd843ad3b9046171aaff4dfe3d3c
+        uses: antono2/vulkan/.github/actions/setup-vulkan-ci@23ec75dc6015776f3012880148ca90e66f63010a
         with:
           sdk-version: ${{ steps.compat.outputs.ci_sdk }}
           artifact-tag: ${{ steps.compat.outputs.ci_runtime }}
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        if: runner.os == 'Windows'
-        with:
-          repository: zeux/volk
-          ref: ${{ steps.compat.outputs.volk }}
-          path: build/volk
-      - name: Install Windows Volk header
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $Destination = Join-Path $env:VULKAN_SDK 'Include/volk'
-          New-Item -ItemType Directory -Force $Destination | Out-Null
-          Copy-Item build/volk/volk.h, build/volk/volk.c $Destination
+          volk-revision: ${{ steps.compat.outputs.volk }}
       - name: Build, bundle and render Linux releases
         if: runner.os == 'Linux'
         run: ./scripts/build_release.v '${{ matrix.variant }}'
@@ -100,7 +88,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          . scripts/setup_windows_build.ps1
           v -prod run scripts/build_release.v '${{ matrix.variant }}'
           if ($LASTEXITCODE -ne 0) { throw 'Portable release build failed' }
           & "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/examples.exe" --help
@@ -109,7 +96,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          . scripts/setup_windows_build.ps1
           cl.exe /nologo /std:c++17 /EHsc tests/desktop/windows_text.cpp /Febuild/windows-text-check.exe /Fobuild/windows-text-check.obj /link uiautomationcore.lib ole32.lib oleaut32.lib
           if ($LASTEXITCODE -ne 0) { throw 'Native text probe build failed' }
           powershell.exe -Mta -NoProfile -ExecutionPolicy Bypass -File tests/desktop/accessibility.ps1 -Executable "build/v-imgui-examples-windows-x64-${{ matrix.variant }}/widget_gallery.exe" -SelectionProbe "$PWD/build/windows-text-check.exe"
