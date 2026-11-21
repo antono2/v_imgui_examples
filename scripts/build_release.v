@@ -79,7 +79,6 @@ fn run() ! {
 	binaries := os.join_path(root, 'build', 'release-binaries-' + variant)
 	os.mkdir_all(binaries)!
 	mut flags := ['-d', 'release_accessibility', '-d', 'appui_embedded', '-no-memory-limit']
-	mut extension := ''
 	mut platform := ''
 	$if windows {
 		header := find_file(native_directory, ['glfw3.h'], 'glfw-src')!
@@ -93,22 +92,12 @@ fn run() ! {
 			'-cc', 'msvc']
 		release_tools.copy(find_file(native_directory, ['glfw3.dll'], '')!, os.join_path(binaries, 'glfw3.dll'))!
 		release_tools.copy(find_file(os.join_path(imgui, 'lib'), ['vimgui.dll'], '')!, os.join_path(binaries, 'vimgui.dll'))!
-		extension = '.exe'
 		platform = 'windows'
 	} $else {
 		flags << ['-cc', 'gcc']
 		platform = 'linux'
 	}
-	for example in ['glfw_vulkan', 'widget_gallery', 'implot_dashboard'] {
-		source := if example == 'glfw_vulkan' {
-			root
-		} else {
-			os.join_path(root, 'examples', example)
-		}
-		mut args := flags.clone()
-		args << ['-o', os.join_path(binaries, example + extension), source]
-		release_tools.command(compiler, args)!
-	}
+	release_tools.compile_desktop(compiler, root, binaries, flags)!
 	output := os.join_path(root, 'build', 'v-imgui-examples-${platform}-x64-${variant}')
 	release_tools.package_release(root, binaries, imgui, output, variant)!
 	$if linux {

@@ -60,11 +60,7 @@ jobs:
         run: v run build_vimgui.vsh --linkage shared --glfw system
       - name: Compile and render examples
         run: |
-          for example in glfw_vulkan widget_gallery implot_dashboard; do
-            source=.
-            if [ "$example" != glfw_vulkan ]; then source="examples/$example"; fi
-            v -no-memory-limit -cc gcc -o "build/$example" "$source"
-          done
+          v run scripts/build_desktop.vsh --output "$GITHUB_WORKSPACE/build" -no-memory-limit -cc gcc
           v run scripts/smoke_desktop.vsh "$GITHUB_WORKSPACE/build"
       - name: Upload rendering logs
         if: always()

@@ -10,8 +10,6 @@ struct NativeCompatibility {
 	glfw string
 }
 
-const examples = ['glfw_vulkan', 'widget_gallery', 'implot_dashboard']
-
 struct Library {
 	name string
 	path string
