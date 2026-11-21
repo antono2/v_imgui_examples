@@ -1,11 +1,10 @@
 // Render the desktop examples on Lavapipe and retain the Vulkan diagnostics.
+import desktopsettings
 import os
 import strings
 import time
 
-const standard_frames = 60
-// The dashboard keeps 600 samples. Extra frames exercise its wraparound.
-const dashboard_frames = 660
+const initial_diagnostics_capacity = 256
 const example_timeout = 60 * time.second
 const capture_interval = 10 * time.millisecond
 
@@ -24,7 +23,7 @@ fn render(xvfb string, binary string, args []string, environment map[string]stri
 	process.use_pgroup = true
 	process.run()
 	defer { process.close() }
-	mut output := strings.new_builder(256)
+	mut output := strings.new_builder(initial_diagnostics_capacity)
 	timer := time.new_stopwatch()
 	for {
 		live := process.is_alive()
@@ -84,7 +83,11 @@ fn run(args []string) ! {
 	environment['VK_INSTANCE_LAYERS'] = 'VK_LAYER_KHRONOS_validation'
 	menu := os.join_path(root, 'examples')
 	for example in ['glfw_vulkan', 'widget_gallery', 'implot_dashboard'] {
-		frames := if example == 'implot_dashboard' { dashboard_frames } else { standard_frames }
+		frames := if example == 'implot_dashboard' {
+			desktopsettings.dashboard_smoke_frames
+		} else {
+			desktopsettings.standard_smoke_frames
+		}
 		environment['VIMGUI_SMOKE_FRAMES'] = frames.str()
 		log_path := os.join_path(logs, example + '.log')
 		if os.is_executable(menu) {
