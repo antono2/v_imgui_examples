@@ -309,7 +309,7 @@ jobs:
         run: v run build_vimgui.vsh --linkage shared --glfw system
       - name: Build and render desktop examples with V3
         run: |
-          v run source/demo/scripts/build_desktop.vsh --output "$RUNNER_TEMP" -new-compiler -no-memory-limit \
+          v run source/demo/scripts/build_desktop.vsh --output "$RUNNER_TEMP" -no-memory-limit \
             -path "$VMODULES/antono2|@vlib|@vmodules" -cc tcc
           v run source/demo/scripts/smoke_desktop.vsh "$RUNNER_TEMP"
 
